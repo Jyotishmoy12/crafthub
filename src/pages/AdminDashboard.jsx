@@ -197,7 +197,7 @@ const AdminDashboard = () => {
         <button 
           onClick={() => {
             auth.signOut();
-            navigate('/auth');
+            navigate('/');
           }}
           className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
         >
