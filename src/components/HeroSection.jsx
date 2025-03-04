@@ -1,9 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { FaFacebook, FaYoutube } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
   const canvasRef = useRef(null);
+
+  const navigate = useNavigate();
+
+  const goToProductsPage=()=>{
+    navigate('/products');
+  }
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -207,7 +214,7 @@ const HeroSection = () => {
                 <span className="relative z-10 cursor-pointer">Explore Courses</span>
                 <span className="absolute top-0 left-0 w-full h-0 bg-indigo-700 transition-all duration-300 group-hover:h-full -z-0"></span>
               </button>
-              <button className="px-8 py-3 border-2 border-indigo-600 text-indigo-600 rounded-lg font-medium hover:bg-indigo-50 transition-colors duration-300 cursor-pointer">
+              <button className="px-8 py-3 border-2 border-indigo-600 text-indigo-600 rounded-lg font-medium hover:bg-indigo-50 transition-colors duration-300 cursor-pointer" onClick={goToProductsPage}>
                 Shop Supplies
               </button>
             </motion.div>
