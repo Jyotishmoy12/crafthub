@@ -84,7 +84,7 @@ const CraftCategories = () => {
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 inline-block relative">
-            <span className="relative z-10">Explore Categories</span>
+            <span className="relative z-10 text-orange-600">Explore</span> <span className="text-blue-700">Categories</span>
             <span className="absolute -bottom-2 left-0 w-full h-3 bg-pink-200 -z-10"></span>
           </h2>
           <p className="text-gray-600 mt-2 max-w-xl mx-auto text-sm sm:text-base">Discover your perfect craft through our specially curated categories</p>
