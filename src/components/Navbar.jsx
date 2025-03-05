@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, getDocs } from 'firebase/firestore';
 import app, { db } from '../../firebaseConfig';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -94,9 +95,9 @@ const Navbar = () => {
             <div className="flex-shrink-0">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <div className="flex items-center">
-                  <span className="ml-2 text-lg md:text-2xl font-bold text-blue-700">
+                  <Link to="/" className="ml-2 text-lg md:text-2xl font-bold text-blue-700">
                     <span className="text-orange-600">CraftHub</span> by Pranabi Baruah
-                  </span>
+                  </Link>
                 </div>
               </motion.div>
             </div>
@@ -117,15 +118,15 @@ const Navbar = () => {
                     </motion.a>
                   ))}
                   {location.pathname === '/products' && user && (
-        <motion.a
-          href="/profile"
-          className="text-neutral hover:text-blue-700 font-medium text-xl"
-          whileHover={{ scale: 1.1, y: -2 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Profile
-        </motion.a>
-      )}
+                    <motion.a
+                      href="/profile"
+                      className="text-neutral hover:text-blue-700 font-medium text-xl"
+                      whileHover={{ scale: 1.1, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Profile
+                    </motion.a>
+                  )}
                 </div>
               </div>
             </div>
@@ -245,13 +246,13 @@ const Navbar = () => {
             ))
             }
             {location.pathname === '/products' && user && (
-    <a
-      href="/profile"
-      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-    >
-      Profile
-    </a>
-  )}
+              <a
+                href="/profile"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              >
+                Profile
+              </a>
+            )}
             <div className="flex items-center space-x-4 mt-2">
               {location.pathname === '/products' && (
                 <div className="relative">

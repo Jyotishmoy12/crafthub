@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 
 const CertificateSlider = () => {
   const certificates = [
-    { id: 1, image: '/api/placeholder/800/600?sig=cert1' },
-    { id: 2, image: '/api/placeholder/800/600?sig=cert2' },
-    { id: 3, image: '/api/placeholder/800/600?sig=cert3' },
-    { id: 4, image: '/api/placeholder/800/600?sig=cert4' },
-    { id: 5, image: '/api/placeholder/800/600?sig=cert5' }
+    { id: 1, image: 'certificate1.webp' },
+    { id: 2, image: 'certificate2.webp' },
+    { id: 3, image: 'certificate3.webp' },
+    { id: 4, image: 'certificate1.webp' },
+    { id: 5, image: 'certificate2.webp' }
   ];
 
   return (
