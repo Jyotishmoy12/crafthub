@@ -150,7 +150,7 @@ const CheckoutPage = () => {
             });
 
             // Construct WhatsApp message for admin notification.
-            const adminNumber = '6000460553'; // Replace with your admin's phone number (in international format without the +)
+            const adminNumber = '916000460553'; // Replace with your admin's phone number (in international format without the +)
             const message = `New Order Received\n\nOrder ID: ${orderRef.id}\nName: ${formData.fullName}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nAddress: ${formData.address}, ${formData.city}, ${formData.state} - ${formData.zipCode}\nTotal Price: ₹${totalPrice.toFixed(2)}`;
             const whatsappURL = `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
             
