@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  collection, 
-  getDocs, 
-  addDoc, 
-  deleteDoc, 
-  doc 
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc
 } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  ShoppingCart, 
-  CreditCard, 
-  MapPin, 
-  User, 
-  Mail, 
-  Phone, 
-  CheckCircle2 
+import {
+  ShoppingCart,
+  CreditCard,
+  MapPin,
+  User,
+  Mail,
+  Phone,
+  CheckCircle2
 } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import Footer from '../components/Footer';
@@ -150,16 +150,25 @@ const CheckoutPage = () => {
             });
 
             // Construct WhatsApp message for admin notification.
-            const adminNumber = '916000460553'; // Replace with your admin's phone number (in international format without the +)
+            // Construct WhatsApp message for admin notification.
+            const adminNumber = '916000460553'; // Your admin's phone number in international format
             const message = `New Order Received\n\nOrder ID: ${orderRef.id}\nName: ${formData.fullName}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nAddress: ${formData.address}, ${formData.city}, ${formData.state} - ${formData.zipCode}\nTotal Price: ₹${totalPrice.toFixed(2)}`;
-            const whatsappURL = `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
-            
-            // Open WhatsApp in a new tab for admin.
+
+            // Check if the user is on a mobile device
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            // Use mobile URL scheme if on mobile, otherwise use the web URL.
+            const whatsappURL = isMobile
+              ? `whatsapp://send?phone=${adminNumber}&text=${encodeURIComponent(message)}`
+              : `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
+
+            // Open WhatsApp (this will open the app on mobile, or WhatsApp Web on desktop)
             window.open(whatsappURL, '_blank');
+
 
             // If using the cart flow, clear the cart after order placement.
             if (!buyNowProduct) {
-              const batch = cartItems.map(item => 
+              const batch = cartItems.map(item =>
                 deleteDoc(doc(db, 'carts', user.uid, 'items', item.id))
               );
               await Promise.all(batch);
@@ -189,7 +198,7 @@ const CheckoutPage = () => {
     const rzp = new window.Razorpay(options);
     rzp.open();
   };
-  
+
   if (loading || loadingUser) {
     return (
       <div className="min-h-screen flex justify-center items-center">
@@ -211,17 +220,17 @@ const CheckoutPage = () => {
                 <ShoppingCart className="mr-3 text-blue-600" />
                 Order Summary
               </h2>
-              
+
               {cartItems.map(item => (
-                <div 
-                  key={item.id} 
+                <div
+                  key={item.id}
                   className="flex justify-between items-center border-b py-4"
                 >
                   <div className="flex items-center">
-                    <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className="w-16 h-16 object-cover rounded mr-4" 
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-16 h-16 object-cover rounded mr-4"
                     />
                     <div>
                       <h3 className="font-semibold">{item.name}</h3>
@@ -233,7 +242,7 @@ const CheckoutPage = () => {
                   </span>
                 </div>
               ))}
-              
+
               <div className="mt-6 flex justify-between font-bold text-xl">
                 <span>Total</span>
                 <span>₹{totalPrice.toFixed(2)}</span>
@@ -246,7 +255,7 @@ const CheckoutPage = () => {
                 <CreditCard className="mr-3 text-blue-600" />
                 Checkout Details
               </h2>
-              
+
               <form onSubmit={(e) => {
                 e.preventDefault();
                 initiateRazorpayPayment();
@@ -264,7 +273,7 @@ const CheckoutPage = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <input
@@ -277,7 +286,7 @@ const CheckoutPage = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <input
@@ -290,7 +299,7 @@ const CheckoutPage = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <input
@@ -303,7 +312,7 @@ const CheckoutPage = () => {
                       required
                     />
                   </div>
-                  
+
                   <input
                     type="text"
                     name="city"
@@ -313,7 +322,7 @@ const CheckoutPage = () => {
                     onChange={handleInputChange}
                     required
                   />
-                  
+
                   <input
                     type="text"
                     name="state"
@@ -323,7 +332,7 @@ const CheckoutPage = () => {
                     onChange={handleInputChange}
                     required
                   />
-                  
+
                   <input
                     type="text"
                     name="zipCode"
@@ -334,7 +343,7 @@ const CheckoutPage = () => {
                     required
                   />
                 </div>
-                
+
                 <button
                   type="submit"
                   className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
