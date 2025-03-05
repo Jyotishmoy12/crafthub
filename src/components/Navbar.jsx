@@ -116,6 +116,16 @@ const Navbar = () => {
                       {item}
                     </motion.a>
                   ))}
+                  {location.pathname === '/products' && user && (
+        <motion.a
+          href="/profile"
+          className="text-neutral hover:text-blue-700 font-medium text-xl"
+          whileHover={{ scale: 1.1, y: -2 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Profile
+        </motion.a>
+      )}
                 </div>
               </div>
             </div>
@@ -232,7 +242,16 @@ const Navbar = () => {
               >
                 {item}
               </a>
-            ))}
+            ))
+            }
+            {location.pathname === '/products' && user && (
+    <a
+      href="/profile"
+      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+    >
+      Profile
+    </a>
+  )}
             <div className="flex items-center space-x-4 mt-2">
               {location.pathname === '/products' && (
                 <div className="relative">
