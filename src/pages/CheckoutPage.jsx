@@ -1,4 +1,3 @@
-// CheckoutPage.jsx
 import React, { useState, useEffect } from 'react';
 import { 
   collection, 
@@ -17,8 +16,7 @@ import {
   User, 
   Mail, 
   Phone, 
-  CheckCircle2 ,
-  Trash2,
+  CheckCircle2 
 } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import Footer from '../components/Footer';
@@ -40,7 +38,27 @@ const CheckoutPage = () => {
     zipCode: ''
   });
 
+  // Razorpay configuration
+  const RAZORPAY_KEY_ID =import.meta.env.VITE_RAZORPAY_KEY_ID // Replace with your actual key
+  const RAZORPAY_KEY_SECRET = import.meta.env.VITE_RAZORPAY_KEY_SECRET; // Replace with your actual secret
+
   useEffect(() => {
+    // Load Razorpay script
+    const loadRazorpayScript = () => {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.body.appendChild(script);
+      });
+    };
+
+    loadRazorpayScript().catch(error => {
+      console.error('Failed to load Razorpay script', error);
+      toast.error('Payment gateway loading failed');
+    });
+
     // Wait for the auth state to finish loading.
     if (!loadingUser && !user) {
       navigate('/auth');
@@ -84,9 +102,8 @@ const CheckoutPage = () => {
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const handleSubmitOrder = async (e) => {
-    e.preventDefault();
-
+  const initiateRazorpayPayment = () => {
+    // Validate form first
     const requiredFields = ['fullName', 'email', 'phone', 'address', 'city', 'state', 'zipCode'];
     const missingFields = requiredFields.filter(field => !formData[field]);
     if (missingFields.length > 0) {
@@ -94,31 +111,64 @@ const CheckoutPage = () => {
       return;
     }
 
-    try {
-      // Create an order document
-      const orderRef = await addDoc(collection(db, 'orders'), {
-        userId: user.uid,
-        items: cartItems,
-        total: totalPrice,
-        shippingInfo: formData,
-        status: 'processing',
-        createdAt: new Date()
-      });
+    // Create payment options
+    const options = {
+      key: RAZORPAY_KEY_ID,
+      amount: Math.round(totalPrice * 100), // Amount in paise
+      currency: 'INR',
+      name: 'Your Store Name',
+      description: 'Product Purchase',
+      image: 'https://your-logo-url.com/logo.png', // Optional: Your company logo
+      handler: async function (response) {
+        try {
+          // Verify payment on client-side (Note: This is not secure and should be done server-side in a real app)
+          // In a production scenario, you'd verify this with a backend service
+          if (response.razorpay_payment_id) {
+            // Create order in Firestore
+            const orderRef = await addDoc(collection(db, 'orders'), {
+              userId: user.uid,
+              items: cartItems,
+              total: totalPrice,
+              shippingInfo: formData,
+              paymentInfo: {
+                razorpayPaymentId: response.razorpay_payment_id,
+                status: 'success'
+              },
+              status: 'processing',
+              createdAt: new Date()
+            });
 
-      // Clear the cart by deleting each item document.
-      const batch = cartItems.map(item => 
-        deleteDoc(doc(db, 'carts', user.uid, 'items', item.id))
-      );
-      await Promise.all(batch);
+            // Clear the cart by deleting each item document.
+            const batch = cartItems.map(item => 
+              deleteDoc(doc(db, 'carts', user.uid, 'items', item.id))
+            );
+            await Promise.all(batch);
 
-      toast.success("Order placed successfully");
-      navigate(`/order-confirmation/${orderRef.id}`);
-    } catch (error) {
-      toast.error('Failed to process order');
-    }
+            toast.success("Order placed successfully");
+            navigate(`/order-confirmation/${orderRef.id}`);
+          }
+        } catch (error) {
+          toast.error('Order processing failed');
+          console.error(error);
+        }
+      },
+      prefill: {
+        name: formData.fullName,
+        email: formData.email,
+        contact: formData.phone
+      },
+      notes: {
+        address: formData.address
+      },
+      theme: {
+        color: '#3399cc'
+      }
+    };
+
+    // Open Razorpay checkout
+    const rzp = new window.Razorpay(options);
+    rzp.open();
   };
-
-
   
   if (loading || loadingUser) {
     return (
@@ -170,14 +220,17 @@ const CheckoutPage = () => {
             </div>
           </div>
 
-          {/* Checkout Form (card selection option removed) */}
+          {/* Checkout Form */}
           <div className="bg-white rounded-xl shadow-lg p-6 lg:my-30">
             <h2 className="text-2xl font-bold mb-6 flex items-center">
               <CreditCard className="mr-3 text-blue-600" />
               Checkout Details
             </h2>
             
-            <form onSubmit={handleSubmitOrder}>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              initiateRazorpayPayment();
+            }}>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -267,7 +320,7 @@ const CheckoutPage = () => {
                 className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
               >
                 <CheckCircle2 className="mr-2" />
-                Place Order
+                Pay Now
               </button>
             </form>
           </div>
