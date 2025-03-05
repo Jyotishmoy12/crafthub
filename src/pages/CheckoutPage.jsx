@@ -21,7 +21,6 @@ import {
 import { toast, Toaster } from 'react-hot-toast';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
-import emailjs from '@emailjs/browser';
 
 const CheckoutPage = () => {
   const [user, loadingUser] = useAuthState(auth);
@@ -150,31 +149,13 @@ const CheckoutPage = () => {
               createdAt: new Date()
             });
 
-            // Send an email to the admin with the order details using EmailJS
-            const templateParams = {
-              fullName: formData.fullName,
-              email: formData.email,
-              phone: formData.phone,
-              address: formData.address,
-              city: formData.city,
-              state: formData.state,
-              zipCode: formData.zipCode,
-              orderId: orderRef.id,
-              totalPrice: totalPrice.toFixed(2),
-            };
+            // Construct WhatsApp message for admin notification.
+            const adminNumber = '6000460553'; // Replace with your admin's phone number (in international format without the +)
+            const message = `New Order Received\n\nOrder ID: ${orderRef.id}\nName: ${formData.fullName}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nAddress: ${formData.address}, ${formData.city}, ${formData.state} - ${formData.zipCode}\nTotal Price: ₹${totalPrice.toFixed(2)}`;
+            const whatsappURL = `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
             
-
-            emailjs.send(
-              import.meta.env.VITE_EMAILJS_SERVICE_ID, 
-              import.meta.env.VITE_EMAILJS_TEMPLATE_ID, 
-              templateParams, 
-              import.meta.env.VITE_EMAILJS_USER_ID
-            )
-            .then((result) => {
-              console.log('Email successfully sent!', result.text);
-            }, (error) => {
-              console.error('Failed to send email:', error.text);
-            });
+            // Open WhatsApp in a new tab for admin.
+            window.open(whatsappURL, '_blank');
 
             // If using the cart flow, clear the cart after order placement.
             if (!buyNowProduct) {
