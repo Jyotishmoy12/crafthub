@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from "../components/Navbar";
-import Footer from '../components/Footer';
 import { collection, getDocs, getDoc, updateDoc, doc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { Search, Star, ShoppingCart, Info } from 'lucide-react';
+import { toast, Toaster } from 'react-hot-toast';
+import Navbar from "../components/Navbar";
+import Footer from '../components/Footer';
 
-// Compact RatingStars component with userRating display.
 const RatingStars = ({ productId, currentAverageRating, onRatingSubmit, isAuthenticated, userRating }) => {
   const [hoverRating, setHoverRating] = useState(0);
   const [selectedRating, setSelectedRating] = useState(userRating || 0);
@@ -26,20 +27,18 @@ const RatingStars = ({ productId, currentAverageRating, onRatingSubmit, isAuthen
   return (
     <div className="flex flex-col mt-2">
       <div className="flex items-center">
-        {[1,2,3,4,5].map((star) => (
-          <svg
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
             key={star}
             onClick={() => handleClick(star)}
             onMouseEnter={() => setHoverRating(star)}
             onMouseLeave={() => setHoverRating(0)}
             className={`w-5 h-5 cursor-pointer transition-colors ${
-              (hoverRating >= star || selectedRating >= star) ? 'text-yellow-400' : 'text-gray-300'
-            } ${userRating != null && 'cursor-not-allowed'}`}
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.95a1 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.287 3.951c.3.921-.755 1.688-1.54 1.118l-3.36-2.44a1 1 0 00-1.175 0l-3.36 2.44c-.784.57-1.838-.197-1.54-1.118l1.287-3.951a1 1 0 00-.364-1.118L2.07 9.377c-.783-.57-.38-1.81.588-1.81h4.15a1 1 0 00.95-.69l1.286-3.95z" />
-          </svg>
+              (hoverRating >= star || selectedRating >= star) 
+                ? 'text-yellow-400 fill-yellow-400' 
+                : 'text-gray-300'
+            } ${userRating != null ? 'cursor-not-allowed' : ''}`}
+          />
         ))}
       </div>
       {userRating != null ? (
@@ -55,10 +54,12 @@ const RatingStars = ({ productId, currentAverageRating, onRatingSubmit, isAuthen
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
-  const [user] = useAuthState(auth);
+  
+  // Destructure loading from useAuthState to know when Firebase has determined the auth state.
+  const [user, loadingUser] = useAuthState(auth);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -74,6 +75,7 @@ const ProductsPage = () => {
           ratingsCount: parseInt(docSnap.data().ratingsCount || 0)
         }));
         
+        // Only fetch ratings if user is available; if not, leave them null.
         if (user) {
           const productsWithUserRating = await Promise.all(
             productList.map(async (product) => {
@@ -88,14 +90,45 @@ const ProductsPage = () => {
         } else {
           setProducts(productList);
         }
-        setLoading(false);
+        setLoadingProducts(false);
       } catch (error) {
-        console.error('Error fetching products:', error);
-        setLoading(false);
+        toast.error('Failed to fetch products');
+        setLoadingProducts(false);
       }
     };
-    fetchProducts();
-  }, [user]);
+    
+    // Only fetch products after auth loading is complete.
+    if (!loadingUser) {
+      fetchProducts();
+    }
+  }, [user, loadingUser]);
+
+  const handleAddToCart = async (product) => {
+    if (!user) {
+      toast.error("Please log in to add items to your cart");
+      return;
+    }
+    try {
+      const cartItemRef = doc(db, 'carts', user.uid, 'items', product.id);
+      const cartItemSnap = await getDoc(cartItemRef);
+      if (cartItemSnap.exists()) {
+        await updateDoc(cartItemRef, {
+          quantity: cartItemSnap.data().quantity + 1
+        });
+      } else {
+        await setDoc(cartItemRef, {
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          quantity: 1
+        });
+      }
+      toast.success(`${product.name} added to cart`);
+    } catch (error) {
+      toast.error("Failed to add to cart");
+    }
+  };
 
   const handleRatingSubmit = async (productId, rating) => {
     try {
@@ -126,8 +159,10 @@ const ProductsPage = () => {
             : p
         )
       );
+      
+      toast.success('Rating submitted successfully');
     } catch (error) {
-      console.error('Error updating rating:', error);
+      toast.error('Failed to submit rating');
     }
   };
 
@@ -136,12 +171,12 @@ const ProductsPage = () => {
     product.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) {
+  if (loadingProducts || loadingUser) {
     return (
       <>
         <Navbar />
         <div className="min-h-screen flex justify-center items-center">
-          <p>Loading products...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-blue-500"></div>
         </div>
         <Footer />
       </>
@@ -150,57 +185,84 @@ const ProductsPage = () => {
 
   return (
     <>
+      <Toaster position="top-right" reverseOrder={false} />
       <Navbar />
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
-            All Products
-          </h1>
-          {/* Compact search bar with icon */}
-          <div className="mb-6 flex items-center border border-gray-300 rounded-lg overflow-hidden max-w-md mx-auto my-20">
-            <div className="px-3">
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full py-2 px-2 focus:outline-none"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-800 mb-4 my-30">
+              Discover Our Products
+            </h1>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Browse through our carefully curated collection of high-quality products.
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map(product => (
-              <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-                <img
-                  src={product.image || ''}
-                  alt={product.name}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4">
-                  <h2 className="text-xl font-bold">{product.name}</h2>
-                  <p className="mt-2 text-gray-600">{product.description}</p>
-                  <div className="mt-4">
-                    <span className="text-lg font-bold text-blue-800">
-                      ₹{product.price.toFixed(2)}
-                    </span>
-                    {product.originalPrice > product.price && (
-                      <span className="ml-2 text-sm line-through text-gray-500">
-                        ₹{product.originalPrice.toFixed(2)}
-                      </span>
+
+          {/* Search Bar */}
+          <div className="max-w-xl mx-auto mb-12">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search products..."
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Products Grid */}
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-xl text-gray-500">No products found</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {filteredProducts.map(product => (
+                <div 
+                  key={product.id} 
+                  className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+                >
+                  <div className="relative">
+                    <img
+                      src={product.image || ''}
+                      alt={product.name}
+                      className="w-full h-48 object-cover rounded-t-xl"
+                    />
+                    {!product.inStock && (
+                      <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
+                        Out of Stock
+                      </div>
                     )}
                   </div>
-                  <div className="mt-2">
-                    <span className={`text-sm font-medium ${product.inStock ? 'text-green-500' : 'text-red-500'}`}>
-                      {product.inStock ? 'In Stock' : 'Out of Stock'}
-                    </span>
-                  </div>
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-700">
-                      Average Rating: {product.averageRating.toFixed(1)} ({product.ratingsCount} ratings)
-                    </p>
+                  
+                  <div className="p-5">
+                    <h2 className="text-xl font-bold mb-2">{product.name}</h2>
+                    <p className="text-gray-600 mb-4 h-12 overflow-hidden">{product.description}</p>
+                    
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <span className="text-lg font-bold text-blue-600">
+                          ₹{product.price.toFixed(2)}
+                        </span>
+                        {product.originalPrice > product.price && (
+                          <span className="ml-2 text-sm line-through text-gray-500">
+                            ₹{product.originalPrice.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <Star className="h-5 w-5 text-yellow-400 mr-1" />
+                        <span className="text-sm text-gray-600">
+                          {product.averageRating.toFixed(1)} ({product.ratingsCount})
+                        </span>
+                      </div>
+                    </div>
+
                     <RatingStars 
                       productId={product.id}
                       currentAverageRating={product.averageRating}
@@ -208,30 +270,33 @@ const ProductsPage = () => {
                       isAuthenticated={!!user}
                       userRating={product.userRating}
                     />
-                  </div>
-                  <div className="mt-4 flex justify-between items-center">
-                    <button
-                      onClick={() => navigate(`/product/${product.id}`)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                    >
-                      View Details
-                    </button>
-                    <button
-                      onClick={() => console.log(`Adding product ${product.id} to cart`)}
-                      disabled={!product.inStock}
-                      className={`px-4 py-2 rounded transition-colors ${
-                        !product.inStock
-                          ? 'bg-gray-400 cursor-not-allowed'
-                          : 'bg-green-600 hover:bg-green-700 text-white'
-                      }`}
-                    >
-                      {product.inStock ? 'Add to Cart' : 'Out of Stock'}
-                    </button>
+
+                    <div className="mt-6 flex space-x-3">
+                      <button
+                        onClick={() => navigate(`/product/${product.id}`)}
+                        className="flex-1 flex items-center justify-center bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition-colors"
+                      >
+                        <Info className="h-5 w-5 mr-2" />
+                        Details
+                      </button>
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        disabled={!product.inStock}
+                        className={`flex-1 flex items-center justify-center py-2 rounded-lg transition-colors ${
+                          !product.inStock
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-100'
+                        }`}
+                      >
+                        <ShoppingCart className="h-5 w-5 mr-2" />
+                        {product.inStock ? 'Add to Cart' : 'Sold Out'}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <Footer />

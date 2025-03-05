@@ -1,20 +1,25 @@
-import React, { useState, useEffect } from 'react'; 
+// Navbar.jsx (modified snippet)
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import app from '../../firebaseConfig'; // Ensure Firebase is initialized properly
+import { collection, getDocs } from 'firebase/firestore';
+import app, { db } from '../../firebaseConfig';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check for admin user via Firebase Auth
+  // Listen for auth changes and update admin state if needed
   useEffect(() => {
     const auth = getAuth(app);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
       if (user && user.email === 'pranabibaruah@gmail.com') {
         setIsAdmin(true);
       } else {
@@ -24,6 +29,30 @@ const Navbar = () => {
     return () => unsubscribe();
   }, []);
 
+  // Fetch the cart count for the logged in user (if any)
+  useEffect(() => {
+    if (user) {
+      const fetchCartCount = async () => {
+        try {
+          const cartItemsRef = collection(db, 'carts', user.uid, 'items');
+          const cartSnapshot = await getDocs(cartItemsRef);
+          let count = 0;
+          cartSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            count += data.quantity || 0;
+          });
+          setCartCount(count);
+        } catch (error) {
+          console.error("Error fetching cart count:", error);
+        }
+      };
+      fetchCartCount();
+    } else {
+      setCartCount(0);
+    }
+  }, [user]);
+
+  // Navigation functions
   const moveToAuth = () => {
     navigate('/auth');
   };
@@ -34,7 +63,6 @@ const Navbar = () => {
     }
   };
 
-  // Function to handle logout
   const logoutUser = async () => {
     const auth = getAuth(app);
     try {
@@ -45,11 +73,10 @@ const Navbar = () => {
     }
   };
 
-  // Handle scroll effect
+  // Listen for scroll events to add a shadow effect
   useEffect(() => {
     const handleScroll = () => {
-      const offset = window.scrollY;
-      setScrolled(offset > 50);
+      setScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -58,9 +85,7 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`fixed w-full z-50 transition-all duration-300 ${
-          scrolled ? 'py-2 shadow-md' : 'py-4'
-        }`}
+        className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'py-2 shadow-md' : 'py-4'}`}
         style={{ backgroundColor: 'white' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5">
@@ -83,7 +108,7 @@ const Navbar = () => {
                   {['Courses', 'Products'].map((item) => (
                     <motion.a
                       key={item}
-                      href={`${item.toLowerCase()}`}
+                      href={`/${item.toLowerCase()}`}
                       className="text-neutral hover:text-blue-700 font-medium text-xl"
                       whileHover={{ scale: 1.1, y: -2 }}
                       whileTap={{ scale: 0.95 }}
@@ -95,29 +120,62 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Right side buttons (Desktop) */}
-            <div className="hidden md:block">
-              {isAdmin && location.pathname === '/' && (
+            {/* Right Side Buttons (Desktop) */}
+            <div className="hidden md:flex items-center space-x-4">
+              {isAdmin && (
                 <motion.button
                   onClick={goToAdminDashboard}
-                  className="ml-8 px-4 py-2 rounded-md text-white font-medium bg-red-600 hover:bg-red-700"
+                  className="px-4 py-2 rounded-md text-white font-medium bg-red-600 hover:bg-red-700"
                 >
                   Admin Dashboard
                 </motion.button>
               )}
-              {location.pathname === '/products' ? (
+
+              {/* Cart Icon only on /products route */}
+              {location.pathname === '/products' && (
+                <div className="relative">
+                  <motion.button
+                    onClick={() => user ? navigate('/cart') : moveToAuth()}
+                    className="p-2"
+                  >
+                    <svg
+                      className="w-6 h-6 text-gray-700"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4"
+                      />
+                      <circle cx="9" cy="21" r="1" />
+                      <circle cx="20" cy="21" r="1" />
+                    </svg>
+                  </motion.button>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
+                      {cartCount}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Auth Button */}
+              {user ? (
                 <motion.button
                   onClick={logoutUser}
-                  className="ml-8 px-4 py-2 rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700"
+                  className="px-4 py-2 rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700"
                 >
                   Logout
                 </motion.button>
               ) : (
                 <motion.button
                   onClick={moveToAuth}
-                  className="ml-8 px-4 py-2 rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700"
+                  className="px-4 py-2 rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700"
                 >
-                  Get Started
+                  Login
                 </motion.button>
               )}
             </div>
@@ -169,41 +227,66 @@ const Navbar = () => {
             {['Courses', 'Products'].map((item) => (
               <a
                 key={item}
-                href={`${item.toLowerCase()}`}
+                href={`/${item.toLowerCase()}`}
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
               >
                 {item}
               </a>
             ))}
-            {location.pathname === '/products' ? (
-              <motion.button
-                onClick={logoutUser}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full mt-2 px-4 py-2 rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Logout
-              </motion.button>
-            ) : (
-              <motion.button
-                onClick={moveToAuth}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full mt-2 px-4 py-2 rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Get Started
-              </motion.button>
-            )}
-            {isAdmin && location.pathname === '/' && (
-              <motion.button
-                onClick={goToAdminDashboard}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full mt-2 px-4 py-2 rounded-md text-white font-medium bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Admin Dashboard
-              </motion.button>
-            )}
+            <div className="flex items-center space-x-4 mt-2">
+              {location.pathname === '/products' && (
+                <div className="relative">
+                  <motion.button
+                    onClick={() => user ? navigate('/cart') : moveToAuth()}
+                    className="p-2"
+                  >
+                    <svg
+                      className="w-6 h-6 text-gray-700"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4"
+                      />
+                      <circle cx="9" cy="21" r="1" />
+                      <circle cx="20" cy="21" r="1" />
+                    </svg>
+                  </motion.button>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
+                      {cartCount}
+                    </span>
+                  )}
+                </div>
+              )}
+              {user ? (
+                <motion.button
+                  onClick={logoutUser}
+                  className="w-full px-4 py-2 rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Logout
+                </motion.button>
+              ) : (
+                <motion.button
+                  onClick={moveToAuth}
+                  className="w-full px-4 py-2 rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Login
+                </motion.button>
+              )}
+              {isAdmin && (
+                <motion.button
+                  onClick={goToAdminDashboard}
+                  className="w-full px-4 py-2 rounded-md text-white font-medium bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Admin Dashboard
+                </motion.button>
+              )}
+            </div>
           </div>
         </motion.div>
       </nav>
