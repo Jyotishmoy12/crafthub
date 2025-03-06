@@ -53,7 +53,6 @@ const CourseDetails = () => {
   // Disable copy function within the video container
   useEffect(() => {
     const handleCopy = (e) => {
-      // If the selection is inside our video container, prevent copying.
       const selection = window.getSelection();
       if (
         videoContainerRef.current &&
@@ -166,9 +165,17 @@ const CourseDetails = () => {
                   {user && (
                     <span className="watermark">{user.email}</span>
                   )}
-                  {/* Mobile overlay to block share icon */}
+                  {/* Overlay for mobile screens to block share icon */}
                   <div
                     className="mobile-share-overlay"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  />
+                  {/* Overlay for desktop screens to block copy link */}
+                  <div
+                    className="desktop-copy-overlay"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -229,7 +236,7 @@ const CourseDetails = () => {
         </div>
       </div>
       <Footer />
-      {/* CSS for animated watermark, fullscreen adjustments, and mobile overlay */}
+      {/* CSS for animated watermark, fullscreen adjustments, and overlays */}
       <style>{`
         .video-container:fullscreen {
           padding: 0;
@@ -252,7 +259,7 @@ const CourseDetails = () => {
           75% { top: 85%; left: 5%; }
           100% { top: 5%; left: 5%; }
         }
-        /* Mobile overlay to block the share icon area */
+        /* Mobile overlay to block share icon */
         @media (max-width: 768px) {
           .mobile-share-overlay {
             position: absolute;
@@ -263,6 +270,25 @@ const CourseDetails = () => {
             pointer-events: all;
             background: transparent;
             z-index: 9999;
+          }
+          .desktop-copy-overlay {
+            display: none;
+          }
+        }
+        /* Desktop overlay to block copy link */
+        @media (min-width: 769px) {
+          .desktop-copy-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            pointer-events: all;
+            background: transparent;
+            z-index: 9999;
+          }
+          .mobile-share-overlay {
+            display: none;
           }
         }
       `}</style>
