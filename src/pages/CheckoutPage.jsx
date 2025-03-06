@@ -30,6 +30,7 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(true);
   const [whatsappLink, setWhatsappLink] = useState(null);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [orderId, setOrderId] = useState(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -150,6 +151,7 @@ const CheckoutPage = () => {
               status: 'processing',
               createdAt: new Date()
             });
+            setOrderId(orderRef.id);
 
             // Create a string of ordered items (name and quantity)
             const itemsList = cartItems
@@ -179,7 +181,7 @@ const CheckoutPage = () => {
             }
 
             toast.success("Order placed successfully");
-            navigate(`/order-confirmation/${orderRef.id}`);
+            // Do not navigate immediately—wait until user interacts with the modal.
           }
         } catch (error) {
           toast.error('Order processing failed');
@@ -374,13 +376,23 @@ const CheckoutPage = () => {
               onClick={() => {
                 window.open(whatsappLink, '_blank');
                 setShowWhatsAppModal(false);
+                // After sending message, navigate to Order Confirmation page.
+                if (orderId) {
+                  navigate(`/order-confirmation/${orderId}`);
+                }
               }}
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
             >
               Send via WhatsApp
             </button>
             <button
-              onClick={() => setShowWhatsAppModal(false)}
+              onClick={() => {
+                setShowWhatsAppModal(false);
+                // Optionally, navigate even if user cancels.
+                if (orderId) {
+                  navigate(`/order-confirmation/${orderId}`);
+                }
+              }}
               className="mt-4 text-sm text-gray-500 underline"
             >
               Cancel
