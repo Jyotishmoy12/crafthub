@@ -1,4 +1,3 @@
-// Navbar.jsx (modified snippet)
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -15,6 +14,7 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const isProductsPage = location.pathname === '/products';
 
   // Listen for auth changes and update admin state if needed
   useEffect(() => {
@@ -74,6 +74,11 @@ const Navbar = () => {
     }
   };
 
+  // Navigate to cart or auth page
+  const goToCart = () => {
+    user ? navigate('/cart') : moveToAuth();
+  };
+
   // Listen for scroll events to add a shadow effect
   useEffect(() => {
     const handleScroll = () => {
@@ -82,6 +87,40 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Cart icon with label component
+  const CartIcon = ({ showLabel = false, className = "" }) => (
+    <div className={`relative flex items-center ${className}`}>
+      <motion.button
+        onClick={goToCart}
+        className="p-2 flex items-center"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <svg
+          className="w-6 h-6 text-gray-700"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4"
+          />
+          <circle cx="9" cy="21" r="1" />
+          <circle cx="20" cy="21" r="1" />
+        </svg>
+        {showLabel && <span className="ml-2 text-gray-700">Cart</span>}
+      </motion.button>
+      {cartCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+          {cartCount}
+        </span>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -117,7 +156,7 @@ const Navbar = () => {
                       {item}
                     </motion.a>
                   ))}
-                  {location.pathname === '/products' && user && (
+                  {isProductsPage && user && (
                     <motion.a
                       href="/profile"
                       className="text-neutral hover:text-blue-700 font-medium text-xl"
@@ -133,6 +172,9 @@ const Navbar = () => {
 
             {/* Right Side Buttons (Desktop) */}
             <div className="hidden md:flex items-center space-x-4">
+              {/* Cart Icon only on Products page */}
+              {isProductsPage && <CartIcon showLabel={true} />}
+
               {isAdmin && (
                 <motion.button
                   onClick={goToAdminDashboard}
@@ -142,57 +184,29 @@ const Navbar = () => {
                 </motion.button>
               )}
 
-              {/* Cart Icon only on /products route */}
-              {location.pathname === '/products' && (
-                <div className="relative">
-                  <motion.button
-                    onClick={() => user ? navigate('/cart') : moveToAuth()}
-                    className="p-2"
-                  >
-                    <svg
-                      className="w-6 h-6 text-gray-700"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 3h2l.4 2M7 13h10l4-8H5.4"
-                      />
-                      <circle cx="9" cy="21" r="1" />
-                      <circle cx="20" cy="21" r="1" />
-                    </svg>
-                  </motion.button>
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
-                      {cartCount}
-                    </span>
-                  )}
-                </div>
-              )}
-
               {/* Auth Button */}
               {user ? (
                 <motion.button
                   onClick={logoutUser}
-                  className="px-4 py-2 rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700"
+                  className="px-4 py-2 rounded-md text-white cursor-pointer font-medium bg-indigo-600 hover:bg-indigo-700"
                 >
                   Logout
                 </motion.button>
               ) : (
                 <motion.button
                   onClick={moveToAuth}
-                  className="px-4 py-2 rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700"
+                  className="px-4 py-2 rounded-md text-white font-medium cursor-pointer bg-indigo-600 hover:bg-indigo-700"
                 >
                   Login
                 </motion.button>
               )}
             </div>
 
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
+            {/* Mobile Menu Button with Cart Icon for Products page */}
+            <div className="md:hidden flex items-center">
+              {/* Cart Icon for mobile - only on Products page */}
+              {isProductsPage && <CartIcon className="mr-2" />}
+              
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
@@ -243,9 +257,8 @@ const Navbar = () => {
               >
                 {item}
               </a>
-            ))
-            }
-            {location.pathname === '/products' && user && (
+            ))}
+            {isProductsPage && user && (
               <a
                 href="/profile"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
@@ -253,40 +266,11 @@ const Navbar = () => {
                 Profile
               </a>
             )}
-            <div className="flex items-center space-x-4 mt-2">
-              {location.pathname === '/products' && (
-                <div className="relative">
-                  <motion.button
-                    onClick={() => user ? navigate('/cart') : moveToAuth()}
-                    className="p-2"
-                  >
-                    <svg
-                      className="w-6 h-6 text-gray-700"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 3h2l.4 2M7 13h10l4-8H5.4"
-                      />
-                      <circle cx="9" cy="21" r="1" />
-                      <circle cx="20" cy="21" r="1" />
-                    </svg>
-                  </motion.button>
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
-                      {cartCount}
-                    </span>
-                  )}
-                </div>
-              )}
+            <div className="px-3 py-2 space-y-2">
               {user ? (
                 <motion.button
                   onClick={logoutUser}
-                  className="w-full px-4 py-2 rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-2 cursor-pointer rounded-md text-white font-medium bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   Logout
                 </motion.button>

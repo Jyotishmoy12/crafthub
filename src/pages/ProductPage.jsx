@@ -3,7 +3,7 @@ import { collection, getDocs, getDoc, updateDoc, doc, setDoc } from 'firebase/fi
 import { db, auth } from '../../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Search, Star, ShoppingCart, Info } from 'lucide-react';
+import { Search, Star, ShoppingCart, CreditCard } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import Navbar from "../components/Navbar";
 import Footer from '../components/Footer';
@@ -128,6 +128,31 @@ const ProductsPage = () => {
     } catch (error) {
       toast.error("Failed to add to cart");
     }
+  };
+
+  const handleBuyNow = (product) => {
+    if (!user) {
+      toast.error("Please log in to make a purchase");
+      navigate('/auth');
+      return;
+    }
+
+    if (!product.inStock) {
+      toast.error("This product is currently out of stock");
+      return;
+    }
+
+    // Navigate to checkout with the product information
+    navigate('/checkout', { 
+      state: { 
+        buyNowProduct: {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+        } 
+      }
+    });
   };
 
   const handleRatingSubmit = async (productId, rating) => {
@@ -273,16 +298,21 @@ const ProductsPage = () => {
 
                     <div className="mt-6 flex space-x-3">
                       <button
-                        onClick={() => navigate(`/product/${product.id}`)}
-                        className="flex-1 flex items-center justify-center bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition-colors"
+                        onClick={() => handleBuyNow(product)}
+                        disabled={!product.inStock}
+                        className={`flex-1 flex items-center justify-center cursor-pointer py-2 rounded-lg transition-colors ${
+                          !product.inStock
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
                       >
-                        <Info className="h-5 w-5 mr-2" />
-                        Details
+                        <CreditCard className="h-5 w-5 mr-2" />
+                        Buy Now
                       </button>
                       <button
                         onClick={() => handleAddToCart(product)}
                         disabled={!product.inStock}
-                        className={`flex-1 flex items-center justify-center py-2 rounded-lg transition-colors ${
+                        className={`flex-1 flex items-center cursor-pointer justify-center py-2 rounded-lg transition-colors ${
                           !product.inStock
                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             : 'bg-green-50 text-green-600 hover:bg-green-100'
