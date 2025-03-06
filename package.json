@@ -18,6 +18,7 @@
     "framer-motion": "^12.4.9",
     "install": "^0.13.0",
     "jspdf": "^3.0.0",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.477.0",
     "node": "^20.0.0",
     "node-fetch": "^3.3.2",
