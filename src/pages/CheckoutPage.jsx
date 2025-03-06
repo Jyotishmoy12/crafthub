@@ -28,6 +28,8 @@ const CheckoutPage = () => {
   const location = useLocation();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [whatsappLink, setWhatsappLink] = useState(null);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -155,20 +157,20 @@ const CheckoutPage = () => {
               .join(', ');
 
             // Construct WhatsApp message with order details.
-            const adminNumber = '916000460553'; // Replace with your admin's phone number (in international format without the +)
+            const adminNumber = '916000460553'; // Replace with your admin's phone number (international format without the +)
             const message = `New Order Received\n\nOrder ID: ${orderRef.id}\nItems: ${itemsList}\nName: ${formData.fullName}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nAddress: ${formData.address}, ${formData.city}, ${formData.state} - ${formData.zipCode}\nTotal Price: ₹${totalPrice.toFixed(2)}`;
             
             // Check if the user is on a mobile device
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            // Use mobile URL scheme if on mobile, otherwise use the web URL.
-            const whatsappURL = isMobile 
+            const url = isMobile 
               ? `whatsapp://send?phone=${adminNumber}&text=${encodeURIComponent(message)}`
               : `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
 
-            // Open WhatsApp (this will open the app on mobile, or WhatsApp Web on desktop)
-            window.open(whatsappURL, '_blank');
+            // Instead of auto-opening WhatsApp, store the link and show a modal prompt.
+            setWhatsappLink(url);
+            setShowWhatsAppModal(true);
 
-            // If using the cart flow, clear the cart after order placement.
+            // Clear cart items if using cart flow.
             if (!buyNowProduct) {
               const batch = cartItems.map(item => 
                 deleteDoc(doc(db, 'carts', user.uid, 'items', item.id))
@@ -359,6 +361,33 @@ const CheckoutPage = () => {
         </div>
       </div>
       <Footer />
+
+      {/* WhatsApp Modal */}
+      {showWhatsAppModal && whatsappLink && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-auto text-center">
+            <h2 className="text-xl font-bold mb-4">Send Order Details</h2>
+            <p className="mb-6 text-gray-700">
+              Your order has been placed successfully. Tap the button below to send your order details to our admin via WhatsApp.
+            </p>
+            <button
+              onClick={() => {
+                window.open(whatsappLink, '_blank');
+                setShowWhatsAppModal(false);
+              }}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+            >
+              Send via WhatsApp
+            </button>
+            <button
+              onClick={() => setShowWhatsAppModal(false)}
+              className="mt-4 text-sm text-gray-500 underline"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };
