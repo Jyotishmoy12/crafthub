@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useNavigate } from 'react-router-dom';
@@ -10,9 +10,12 @@ import Footer from '../components/Footer';
 const ProfilePage = () => {
   const [user, loadingUser] = useAuthState(auth);
   const [orders, setOrders] = useState([]);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingEnrollments, setLoadingEnrollments] = useState(true);
   const navigate = useNavigate();
 
+  // Fetch orders for the logged-in user
   useEffect(() => {
     if (!loadingUser && !user) {
       navigate('/auth');
@@ -31,7 +34,6 @@ const ProfilePage = () => {
           }));
           
           // Sort orders by date (newest first)
-          // Handle both Firestore timestamps and regular date strings/objects
           ordersData.sort((a, b) => {
             const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt);
             const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt);
@@ -39,13 +41,13 @@ const ProfilePage = () => {
           });
           
           setOrders(ordersData);
-          setLoading(false);
         } catch (error) {
           console.error("Error fetching orders:", error);
           toast.error('Failed to fetch orders', { 
             icon: '❌',
             style: { background: '#FEE2E2', color: '#B91C1C' },
           });
+        } finally {
           setLoading(false);
         }
       };
@@ -53,6 +55,111 @@ const ProfilePage = () => {
     }
   }, [user, loadingUser, navigate]);
 
+  // Fetch enrolled courses from the enrollments collection
+  useEffect(() => {
+    if (user) {
+      const fetchEnrollmentsAndCourses = async () => {
+        try {
+          const enrollmentsRef = collection(db, 'enrollments');
+          const q = query(enrollmentsRef, where('userId', '==', user.uid));
+          const enrollmentSnapshot = await getDocs(q);
+          const enrollmentData = enrollmentSnapshot.docs.map(doc => ({
+            id: doc.id, // This could be a composite ID like `${user.uid}_${courseId}`
+            ...doc.data()
+          }));
+
+          // For each enrollment, fetch the corresponding course details from "courses"
+          const coursePromises = enrollmentData.map(async (enrollment) => {
+            const courseRef = doc(db, 'courses', enrollment.courseId);
+            const courseSnap = await getDoc(courseRef);
+            if (courseSnap.exists()) {
+              return {
+                id: courseSnap.id,
+                ...courseSnap.data(),
+                enrollmentStatus: enrollment.status,
+              };
+            }
+            return null;
+          });
+
+          const coursesData = await Promise.all(coursePromises);
+          setEnrolledCourses(coursesData.filter(course => course !== null));
+        } catch (error) {
+          console.error("Error fetching enrolled courses:", error);
+          toast.error('Failed to fetch enrolled courses', { 
+            icon: '❌',
+            style: { background: '#FEE2E2', color: '#B91C1C' },
+          });
+        } finally {
+          setLoadingEnrollments(false);
+        }
+      };
+      fetchEnrollmentsAndCourses();
+    }
+  }, [user]);
+
+  // Dynamically load Razorpay checkout script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  // Trigger Razorpay payment for enrollment
+  const handleEnrollmentPayment = (course) => {
+    if (!user) {
+      alert("Please log in to enroll in courses.");
+      return;
+    }
+    const options = {
+      key: process.env.REACT_APP_RAZORPAY_KEY, // Your Razorpay publishable key
+      amount: course.price * 100, // Amount in paise
+      currency: "INR",
+      name: course.title,
+      description: "Enroll in course",
+      image: course.thumbnailUrl || 'https://via.placeholder.com/300x200?text=No+Thumbnail',
+      handler: async function (response) {
+        try {
+          // Store enrollment data in Firestore
+          await setDoc(doc(db, "enrollments", `${user.uid}_${course.id}`), {
+            userId: user.uid,
+            courseId: course.id,
+            status: 'paid',
+            paymentId: response.razorpay_payment_id,
+            createdAt: new Date()
+          });
+          // Update local state to mark the course as paid
+          setEnrolledCourses(prev => prev.map(enrolled => {
+            if (enrolled.id === course.id) {
+              return { ...enrolled, enrollmentStatus: 'paid' };
+            }
+            return enrolled;
+          }));
+          alert("Payment successful! You are now enrolled.");
+        } catch (error) {
+          console.error("Error saving enrollment:", error);
+          alert("Payment succeeded but there was an error saving your enrollment.");
+        }
+      },
+      prefill: {
+        name: user.displayName || "",
+        email: user.email || "",
+        contact: ""
+      },
+      theme: {
+        color: "#3399cc"
+      }
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
+
+  // Utility functions for orders section
   const statusColors = {
     completed: 'bg-green-100 text-green-800',
     pending: 'bg-yellow-100 text-yellow-800',
@@ -63,17 +170,12 @@ const ProfilePage = () => {
     return statusColors[status.toLowerCase()] || 'bg-gray-100 text-gray-800';
   };
 
-  // Fixed formatDate function to handle different timestamp formats
   const formatDate = (timestamp) => {
     try {
-      // Handle Firestore timestamp objects which have a toDate() method
       const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
-      
-      // Check if date is valid before formatting
       if (isNaN(date.getTime())) {
         return 'Invalid date';
       }
-      
       return new Intl.DateTimeFormat('en-IN', { 
         year: 'numeric', 
         month: 'short', 
@@ -101,12 +203,12 @@ const ProfilePage = () => {
       <Navbar />
       <div className="min-h-screen bg-gray-50 pt-8 pb-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Orders Section (Existing Functionality) */}
           <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
             <div className="mb-6">
               <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
               <p className="text-gray-500 mt-1">View and track all your orders in one place</p>
             </div>
-
             {orders.length === 0 ? (
               <div className="text-center py-16">
                 <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -230,6 +332,72 @@ const ProfilePage = () => {
               </div>
             )}
           </div>
+
+          {/* Enrolled Courses Section */}
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900">My Enrolled Courses</h1>
+              <p className="text-gray-500 mt-1">View your enrolled courses and access course details</p>
+            </div>
+            {loadingEnrollments ? (
+              <div className="flex justify-center items-center py-16">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+              </div>
+            ) : enrolledCourses.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="mt-4 text-xl font-semibold text-gray-900">You haven't enrolled in any courses yet.</p>
+                <button 
+                  onClick={() => navigate('/courses')}
+                  className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Browse Courses
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {enrolledCourses.map(course => (
+                  <div key={course.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300">
+                    <div className="flex flex-col sm:flex-row items-center p-4">
+                      <img 
+                        src={course.thumbnailUrl || 'https://via.placeholder.com/300x200?text=No+Thumbnail'} 
+                        alt={course.title} 
+                        className="w-32 h-20 object-cover rounded-lg mr-4" 
+                      />
+                      <div className="flex-1">
+                        <h2 className="text-xl font-semibold text-gray-900">{course.title}</h2>
+                        <p className="text-gray-600 mt-1">{course.description}</p>
+                        {course.enrollmentStatus && (
+                          course.enrollmentStatus === 'paid' ? (
+                            <p className="mt-1 text-sm text-green-600 font-semibold">Enrolled</p>
+                          ) : (
+                            <p className="mt-1 text-sm text-yellow-600 font-semibold">{course.enrollmentStatus}</p>
+                          )
+                        )}
+                      </div>
+                      <div className="mt-4 sm:mt-0 flex gap-4">
+                        {course.enrollmentStatus !== 'paid' && (
+                          <button
+                            onClick={() => handleEnrollmentPayment(course)}
+                            className="inline-block text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition"
+                          >
+                            Enroll
+                          </button>
+                        )}
+                        <button
+                          onClick={() => navigate(`/coursedetails/${course.id}`)}
+                          className={`inline-block text-white px-4 py-2 rounded transition ${course.enrollmentStatus !== 'paid' ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+                          disabled={course.enrollmentStatus !== 'paid'}
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
       <Footer />

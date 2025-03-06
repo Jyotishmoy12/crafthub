@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../../firebaseConfig';
 import { Trash2, Edit, PlusCircle, Upload } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import AdminDashboardCourse from '../components/AdminDashboardCourse';
 // import { toast } from 'react-toastify';
 
 const AdminDashboard = () => {
@@ -419,6 +420,7 @@ const AdminDashboard = () => {
         ))}
       </div>
     </div>
+    <AdminDashboardCourse/>
     </>
   );
 };

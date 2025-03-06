@@ -8,6 +8,8 @@ import CartPage from './pages/CartPage'
 import CheckoutPage from './pages/CheckoutPage'
 import OrderConfirmationPage from './pages/OrderConfirmationPage'
 import ProfilePage from './pages/ProfilePage'
+import CoursesPage from './pages/CoursePage'
+import CourseDetails from './pages/CourseDetails'
 
 const App = () => {
   return (
@@ -22,6 +24,8 @@ const App = () => {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/coursedetails/:courseId" element={<CourseDetails />} />
       </Routes>
     </Router>
     </>

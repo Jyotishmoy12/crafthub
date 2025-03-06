@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, getDocs } from 'firebase/firestore';
 import app, { db } from '../../firebaseConfig';
-import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +13,9 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const isProductsPage = location.pathname === '/products';
+  
+  // Determine if we are on pages where Profile link should be shown
+  const showProfileLink = location.pathname === '/products' || location.pathname === '/courses';
 
   // Listen for auth changes and update admin state if needed
   useEffect(() => {
@@ -156,7 +157,7 @@ const Navbar = () => {
                       {item}
                     </motion.a>
                   ))}
-                  {isProductsPage && user && (
+                  {showProfileLink && user && (
                     <motion.a
                       href="/profile"
                       className="text-neutral hover:text-blue-700 font-medium text-xl"
@@ -173,7 +174,9 @@ const Navbar = () => {
             {/* Right Side Buttons (Desktop) */}
             <div className="hidden md:flex items-center space-x-4">
               {/* Cart Icon only on Products page */}
-              {isProductsPage && <CartIcon showLabel={true} />}
+              {(location.pathname === '/products' || location.pathname === '/courses') && (
+                <CartIcon showLabel={true} />
+              )}
 
               {isAdmin && (
                 <motion.button
@@ -202,10 +205,11 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Mobile Menu Button with Cart Icon for Products page */}
+            {/* Mobile Menu Button with Cart Icon for Products/Courses pages */}
             <div className="md:hidden flex items-center">
-              {/* Cart Icon for mobile - only on Products page */}
-              {isProductsPage && <CartIcon className="mr-2" />}
+              {(location.pathname === '/products' || location.pathname === '/courses') && (
+                <CartIcon className="mr-2" />
+              )}
               
               <button
                 onClick={() => setIsOpen(!isOpen)}
@@ -258,7 +262,7 @@ const Navbar = () => {
                 {item}
               </a>
             ))}
-            {isProductsPage && user && (
+            {showProfileLink && user && (
               <a
                 href="/profile"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
