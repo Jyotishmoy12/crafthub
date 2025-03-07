@@ -5,24 +5,20 @@ import { useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
-
-// Loader component with a spinning animation
-const Loader = () => (
-  <div className="flex flex-col items-center justify-center mt-12">
-    <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-blue-500"></div>
-    <p className="mt-4 text-xl font-semibold text-blue-500">Loading courses...</p>
-  </div>
-);
+import { toast, Toaster } from 'react-hot-toast';
 
 const CoursePage = () => {
   const [courses, setCourses] = useState([]);
-  const [enrollments, setEnrollments] = useState([]); // user enrollments from Firestore
+  const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [whatsappLink, setWhatsappLink] = useState(null);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [orderId, setOrderId] = useState(null);
   const navigate = useNavigate();
   const auth = getAuth();
   const user = auth.currentUser; // Assumes the user is logged in
 
-  // Load the Razorpay checkout script dynamically
+  // Load Razorpay checkout script
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -49,13 +45,12 @@ const CoursePage = () => {
         setLoading(false);
       }
     };
-
     fetchCourses();
   }, []);
 
   // Fetch enrollments for the current user from Firestore
   useEffect(() => {
-    if (!user) return; // if not logged in, skip fetching enrollments
+    if (!user) return;
     const fetchEnrollments = async () => {
       try {
         const q = query(collection(db, 'enrollments'), where('userId', '==', user.uid));
@@ -69,44 +64,58 @@ const CoursePage = () => {
     fetchEnrollments();
   }, [user]);
 
-  // Check if the user is enrolled in a given course (i.e. payment done)
+  // Check if the user is enrolled (i.e. payment done) in a given course
   const isEnrolled = (courseId) => {
     return enrollments.some(enrollment => enrollment.courseId === courseId && enrollment.status === 'paid');
   };
 
-  // Handle the enrollment payment via Razorpay
+  // Handle the enrollment payment via Razorpay and show WhatsApp modal on success
   const handlePayment = (course) => {
     if (!user) {
       alert("Please log in to enroll in courses.");
       return;
     }
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Use your publishable key here
-      amount: course.price * 100, // Amount in paise
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: course.price * 100, // in paise
       currency: "INR",
       name: course.title,
       description: "Purchase course",
       image: course.thumbnailUrl || 'https://via.placeholder.com/300x200?text=No+Thumbnail',
       handler: async function (response) {
         try {
-          // Save the enrollment status in Firestore
-          await setDoc(doc(db, "enrollments", `${user.uid}_${course.id}`), {
+          // Generate an enrollment/order id using user uid and course id
+          const enrollmentId = `${user.uid}_${course.id}`;
+          // Save enrollment details in Firestore
+          await setDoc(doc(db, "enrollments", enrollmentId), {
             userId: user.uid,
             courseId: course.id,
             status: 'paid',
             paymentId: response.razorpay_payment_id,
             createdAt: new Date()
           });
-          // Update the local state to enable "View Details"
+          // Update local enrollments state
           setEnrollments(prev => [...prev, { userId: user.uid, courseId: course.id, status: 'paid' }]);
-          alert("Payment successful! You can now view course details.");
+          setOrderId(enrollmentId);
+          
+          // Construct WhatsApp message with enrollment details
+          const message = `New Course Enrollment\n\nEnrollment ID: ${enrollmentId}\nCourse: ${course.title}\nPrice: ₹${course.price}\nPayment ID: ${response.razorpay_payment_id}\nName: ${user.displayName || ''}\nEmail: ${user.email}`;
+          const adminNumber = '916000460553'; // Replace with your admin's phone number (without the +)
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+          const url = isMobile 
+            ? `whatsapp://send?phone=${adminNumber}&text=${encodeURIComponent(message)}`
+            : `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
+          
+          // Set WhatsApp link and show modal
+          setWhatsappLink(url);
+          setShowWhatsAppModal(true);
+          toast.success("Payment successful! Please send your enrollment details via WhatsApp.");
         } catch (error) {
           console.error("Error saving enrollment:", error);
-          alert("Payment succeeded but there was an error saving your enrollment.");
+          toast.error("Payment succeeded but there was an error saving your enrollment.");
         }
       },
       prefill: {
-        // Optionally prefill with user's information
         name: user.displayName || "",
         email: user.email || "",
         contact: ""
@@ -123,7 +132,11 @@ const CoursePage = () => {
     rzp.open();
   };
 
-  if (loading) return <Loader />;
+  const totalPrice = (course) => course.price; // For individual course
+
+  
+
+  if (loading) return <div className="flex justify-center items-center h-screen"><p>Loading courses...</p></div>;
   if (!courses.length)
     return (
       <div className="text-center mt-12 text-xl font-semibold">
@@ -134,6 +147,7 @@ const CoursePage = () => {
   return (
     <>
       <Navbar />
+      <Toaster position="top-right" reverseOrder={false} />
       <div className="max-w-6xl mx-auto p-6">
         <h1 className="text-4xl font-bold text-center my-8">Courses</h1>
         <ul className="space-y-8">
@@ -156,7 +170,6 @@ const CoursePage = () => {
                 <p className="mt-2 text-gray-600">{course.description}</p>
                 <p className="mt-2 font-bold text-lg">Price: ₹{course.price}</p>
                 <div className="mt-4 flex gap-4">
-                  {/* Enroll button: if already enrolled, disable it */}
                   <button
                     onClick={() => handlePayment(course)}
                     className={`inline-block text-white px-4 py-2 rounded transition ${
@@ -168,7 +181,6 @@ const CoursePage = () => {
                   >
                     {isEnrolled(course.id) ? "Enrolled" : "Enroll"}
                   </button>
-                  {/* View Details button: disabled until enrolled */}
                   <button
                     onClick={() => navigate(`/coursedetails/${course.id}`)}
                     className={`inline-block text-white px-4 py-2 rounded transition ${
@@ -187,6 +199,33 @@ const CoursePage = () => {
         </ul>
       </div>
       <Footer />
+
+      {/* WhatsApp Modal */}
+      {showWhatsAppModal && whatsappLink && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-auto text-center">
+            <h2 className="text-xl font-bold mb-4">Send Enrollment Details</h2>
+            <p className="mb-6 text-gray-700">
+              Your payment was successful. Tap the button below to send your enrollment details to our admin via WhatsApp.
+            </p>
+            <button
+              onClick={() => {
+                window.open(whatsappLink, '_blank');
+                setShowWhatsAppModal(false);
+              }}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+            >
+              Send via WhatsApp
+            </button>
+            <button
+              onClick={() => setShowWhatsAppModal(false)}
+              className="mt-4 text-sm text-gray-500 underline"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };
