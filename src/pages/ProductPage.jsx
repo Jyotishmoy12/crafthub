@@ -3,11 +3,14 @@ import { collection, getDocs, getDoc, updateDoc, doc, setDoc } from 'firebase/fi
 import { db, auth } from '../../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Search, Star, ShoppingCart, CreditCard, Eye } from 'lucide-react';
+import { Search, Star } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import Navbar from "../components/Navbar";
 import Footer from '../components/Footer';
 
+// ----------------------------------
+// RatingStars Component (unchanged)
+// ----------------------------------
 const RatingStars = ({ productId, currentAverageRating, onRatingSubmit, isAuthenticated, userRating }) => {
   const [hoverRating, setHoverRating] = useState(0);
   const [selectedRating, setSelectedRating] = useState(userRating || 0);
@@ -34,8 +37,8 @@ const RatingStars = ({ productId, currentAverageRating, onRatingSubmit, isAuthen
             onMouseEnter={() => setHoverRating(star)}
             onMouseLeave={() => setHoverRating(0)}
             className={`w-5 h-5 cursor-pointer transition-colors ${
-              (hoverRating >= star || selectedRating >= star) 
-                ? 'text-yellow-400 fill-yellow-400' 
+              (hoverRating >= star || selectedRating >= star)
+                ? 'text-yellow-400 fill-yellow-400'
                 : 'text-gray-300'
             } ${userRating != null ? 'cursor-not-allowed' : ''}`}
           />
@@ -52,13 +55,15 @@ const RatingStars = ({ productId, currentAverageRating, onRatingSubmit, isAuthen
   );
 };
 
+// ----------------------------------
+// ProductsPage Component
+// ----------------------------------
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
-  
-  // Destructure loading from useAuthState to know when Firebase has determined the auth state.
+
   const [user, loadingUser] = useAuthState(auth);
 
   useEffect(() => {
@@ -75,7 +80,7 @@ const ProductsPage = () => {
           ratingsCount: parseInt(docSnap.data().ratingsCount || 0)
         }));
         
-        // Only fetch ratings if user is available; if not, leave them null.
+        // If user is logged in, fetch user-specific ratings
         if (user) {
           const productsWithUserRating = await Promise.all(
             productList.map(async (product) => {
@@ -97,7 +102,6 @@ const ProductsPage = () => {
       }
     };
     
-    // Only fetch products after auth loading is complete.
     if (!loadingUser) {
       fetchProducts();
     }
@@ -120,7 +124,10 @@ const ProductsPage = () => {
           productId: product.id,
           name: product.name,
           price: product.price,
-          image: product.image,
+          // Use the first image from the images array as the cover photo
+          image: (product.images && product.images.length > 0)
+            ? product.images[0]
+            : product.image || '',
           quantity: 1
         });
       }
@@ -136,20 +143,19 @@ const ProductsPage = () => {
       navigate('/auth');
       return;
     }
-
     if (!product.inStock) {
       toast.error("This product is currently out of stock");
       return;
     }
-
-    // Navigate to checkout with the product information
     navigate('/checkout', { 
       state: { 
         buyNowProduct: {
           id: product.id,
           name: product.name,
           price: product.price,
-          image: product.image,
+          image: (product.images && product.images.length > 0)
+            ? product.images[0]
+            : product.image || '',
         } 
       }
     });
@@ -162,11 +168,10 @@ const ProductsPage = () => {
   const handleRatingSubmit = async (productId, rating) => {
     try {
       if (!user) return;
-      const productRef = doc(db, 'products', productId);
       const ratingDocRef = doc(db, 'products', productId, 'ratings', user.uid);
       const ratingDocSnap = await getDoc(ratingDocRef);
-      if (ratingDocSnap.exists()) return;
-      
+      if (ratingDocSnap.exists()) return; // user already rated
+
       const product = products.find(p => p.id === productId);
       const currentCount = product.ratingsCount || 0;
       const currentAverage = product.averageRating || 0;
@@ -174,11 +179,11 @@ const ProductsPage = () => {
       const newSum = (currentAverage * currentCount) + rating;
       const newAverage = newSum / newCount;
       
+      const productRef = doc(db, 'products', productId);
       await updateDoc(productRef, {
         averageRating: newAverage,
         ratingsCount: newCount
       });
-      
       await setDoc(ratingDocRef, { rating });
       
       setProducts(prevProducts =>
@@ -195,6 +200,7 @@ const ProductsPage = () => {
     }
   };
 
+  // Filter products by search term
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -216,10 +222,12 @@ const ProductsPage = () => {
     <>
       <Toaster position="top-right" reverseOrder={false} />
       <Navbar />
+      
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4">
+          {/* Page Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-800 mb-4 my-30">
+            <h1 className="text-4xl font-bold text-gray-800 mb-4 my-20">
               Discover Our Products
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -243,107 +251,158 @@ const ProductsPage = () => {
             </div>
           </div>
 
-          {/* Products Grid */}
+          {/* Product List */}
           {filteredProducts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-xl text-gray-500">No products found</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-              {filteredProducts.map(product => (
-                <div 
-                  key={product.id} 
-                  className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
-                >
-                  <div 
-                    className="relative cursor-pointer" 
-                    onClick={() => handleViewDetails(product.id)}
+            // Always 2 columns
+            <div className="grid grid-cols-2 gap-6">
+              {filteredProducts.map((product) => {
+                // Calculate discount (if needed)
+                const hasDiscount = product.originalPrice > product.price;
+                const discountPercent = hasDiscount
+                  ? Math.round(100 - (product.price / product.originalPrice) * 100)
+                  : 0;
+
+                return (
+                  <div
+                    key={product.id}
+                    className="flex flex-col md:flex-row gap-4 p-2 md:p-4 border rounded-lg bg-white"
                   >
-                    <img
-                      src={product.image || ''}
-                      alt={product.name}
-                      className="w-full h-48 object-cover rounded-t-xl"
-                    />
-                    {!product.inStock && (
-                      <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
-                        Out of Stock
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-5">
-                    <h2 
-                      className="text-xl font-bold mb-2 cursor-pointer hover:text-blue-600 transition-colors"
+                    {/* Image (clickable for all screen sizes) */}
+                    <div
+                      className="relative cursor-pointer w-full h-36 md:w-32 md:h-32 flex-shrink-0"
                       onClick={() => handleViewDetails(product.id)}
                     >
-                      {product.name}
-                    </h2>
-                    <p className="text-gray-600 mb-4 h-12 overflow-hidden">{product.description}</p>
-                    
-                    <div className="flex justify-between items-center mb-4">
-                      <div>
-                        <span className="text-lg font-bold text-blue-600">
-                          ₹{product.price.toFixed(2)}
-                        </span>
-                        {product.originalPrice > product.price && (
-                          <span className="ml-2 text-sm line-through text-gray-500">
-                            ₹{product.originalPrice.toFixed(2)}
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center">
-                        <Star className="h-5 w-5 text-yellow-400 mr-1" />
-                        <span className="text-sm text-gray-600">
-                          {product.averageRating.toFixed(1)} ({product.ratingsCount})
-                        </span>
-                      </div>
+                      <img
+                        src={(product.images && product.images.length > 0)
+                              ? product.images[0]
+                              : product.image || ''}
+                        alt={product.name}
+                        className="w-full h-full object-cover rounded-md"
+                      />
+                      {!product.inStock && (
+                        <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
+                          Out of Stock
+                        </div>
+                      )}
                     </div>
 
-                    <RatingStars 
-                      productId={product.id}
-                      currentAverageRating={product.averageRating}
-                      onRatingSubmit={(rating) => handleRatingSubmit(product.id, rating)}
-                      isAuthenticated={!!user}
-                      userRating={product.userRating}
-                    />
+                    {/* Product Details */}
+                    <div className="flex flex-col flex-1 justify-between">
+                      {/* Big Screens (md+) */}
+                      <div className="hidden md:block">
+                        <h2
+                          className="text-md font-bold cursor-pointer hover:text-blue-600 transition-colors"
+                          onClick={() => handleViewDetails(product.id)}
+                        >
+                          {product.name}
+                        </h2>
 
-                    <div className="mt-6 grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => handleBuyNow(product)}
-                        disabled={!product.inStock}
-                        className={`flex items-center justify-center cursor-pointer py-2 rounded-lg transition-colors ${
-                          !product.inStock
-                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
-                        }`}
-                      >
-                        <CreditCard className="h-4 w-4 mr-1" />
-                        Buy Now
-                      </button>
-                      <button
-                        onClick={() => handleAddToCart(product)}
-                        disabled={!product.inStock}
-                        className={`flex items-center cursor-pointer justify-center py-2 rounded-lg transition-colors ${
-                          !product.inStock
-                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                            : 'bg-green-50 text-green-600 hover:bg-green-100'
-                        }`}
-                      >
-                        <ShoppingCart className="h-4 w-4 mr-1" />
-                        Cart
-                      </button>
-                      <button
-                        onClick={() => handleViewDetails(product.id)}
-                        className="col-span-2 flex items-center justify-center py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 transition-colors"
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Details
-                      </button>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Star className="h-4 w-4 text-yellow-400" />
+                          <span className="text-sm text-gray-600">
+                            {product.averageRating.toFixed(1)} ({product.ratingsCount})
+                          </span>
+                        </div>
+
+                        <div className="mt-2">
+                          <span className="text-base font-bold text-gray-800">
+                            ₹{product.price.toFixed(2)}
+                          </span>
+                        </div>
+
+                        <RatingStars
+                          productId={product.id}
+                          currentAverageRating={product.averageRating}
+                          onRatingSubmit={(rating) => handleRatingSubmit(product.id, rating)}
+                          isAuthenticated={!!user}
+                          userRating={product.userRating}
+                        />
+
+                        <div className="mt-2 text-xs text-gray-600 line-clamp-2">
+                          {product.description}
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            onClick={() => handleAddToCart(product)}
+                            disabled={!product.inStock}
+                            className={`px-2 py-1 text-sm md:px-3 md:py-2 rounded-md transition-colors ${
+                              !product.inStock
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-600'
+                            }`}
+                          >
+                            Add to Cart
+                          </button>
+
+                          <button
+                            onClick={() => handleBuyNow(product)}
+                            disabled={!product.inStock}
+                            className={`px-2 py-1 text-sm md:px-3 md:py-2 rounded-md transition-colors ${
+                              !product.inStock
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                            }`}
+                          >
+                            Buy Now
+                          </button>
+
+                          <button
+                            onClick={() => handleViewDetails(product.id)}
+                            className="px-2 py-1 text-sm md:px-3 md:py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md"
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Small Screens (<md) */}
+                      <div className="block md:hidden">
+                        <h2 className="text-md font-bold">
+                          {product.name}
+                        </h2>
+
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-400" />
+                            <span className="text-sm text-gray-600">
+                              {product.averageRating.toFixed(1)} ({product.ratingsCount})
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-2">
+                          <span className="text-base font-bold text-gray-800">
+                            ₹{product.price.toFixed(2)}
+                          </span>
+                        </div>
+
+                        <div className="mt-2 text-xs text-gray-600 line-clamp-2">
+                          {product.description}
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            onClick={() => handleAddToCart(product)}
+                            disabled={!product.inStock}
+                            className={`px-2 py-1 text-sm rounded-md transition-colors ${
+                              !product.inStock
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-600'
+                            }`}
+                          >
+                            Add to Cart
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

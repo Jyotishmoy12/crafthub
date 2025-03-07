@@ -71,7 +71,7 @@ const Footer = () => {
             <p className="text-gray-300 flex items-center justify-center text-xs sm:text-sm">
               Made with <Heart size={14} className="mx-1 text-pink-500 animate-pulse" /> by
               <a 
-                href="https://linkedin.com/in/jyotishmoy" 
+                href="https://www.linkedin.com/in/jyotishmoy-deka-6871b9229/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="ml-1 font-medium text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 hover:from-indigo-300 hover:to-purple-300 transition-all"

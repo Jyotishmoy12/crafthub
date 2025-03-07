@@ -3,11 +3,84 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, collection, getDocs, updateDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Star, ShoppingCart, CreditCard, ArrowLeft, Clock, Package, Truck, Shield } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  Clock, 
+  Package, 
+  Truck, 
+  Shield, 
+  Star, 
+  ShoppingCart, 
+  CreditCard 
+} from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import Navbar from "../components/Navbar";
 import Footer from '../components/Footer';
 
+/* -------------------------------
+   ImageCarousel Component
+   -------------------------------
+   This component accepts an array of image URLs and displays
+   them in a carousel with next/prev navigation and thumbnails.
+---------------------------------- */
+const ImageCarousel = ({ images, alt }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (!images || images.length === 0) return null;
+
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  return (
+    <div className="relative">
+      <img 
+        src={images[currentIndex]} 
+        alt={alt} 
+        className="w-full max-h-96 object-contain rounded-lg" 
+      />
+      {images.length > 1 && (
+        <>
+          <button 
+            onClick={prevImage} 
+            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <button 
+            onClick={nextImage} 
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75"
+          >
+            <ArrowRight className="h-5 w-5" />
+          </button>
+        </>
+      )}
+      {/* Thumbnail navigation */}
+      {images.length > 1 && (
+        <div className="flex justify-center mt-4 space-x-2">
+          {images.map((img, index) => (
+            <img 
+              key={index}
+              src={img}
+              alt={`Thumbnail ${index + 1}`}
+              onClick={() => setCurrentIndex(index)}
+              className={`w-16 h-16 object-cover rounded-lg cursor-pointer border-2 ${index === currentIndex ? 'border-blue-600' : 'border-transparent'}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* -------------------------------
+   RatingStars Component (unchanged)
+---------------------------------- */
 const RatingStars = ({ productId, currentAverageRating, onRatingSubmit, isAuthenticated, userRating }) => {
   const [hoverRating, setHoverRating] = useState(0);
   const [selectedRating, setSelectedRating] = useState(userRating || 0);
@@ -34,8 +107,8 @@ const RatingStars = ({ productId, currentAverageRating, onRatingSubmit, isAuthen
             onMouseEnter={() => setHoverRating(star)}
             onMouseLeave={() => setHoverRating(0)}
             className={`w-6 h-6 cursor-pointer transition-colors ${
-              (hoverRating >= star || selectedRating >= star) 
-                ? 'text-yellow-400 fill-yellow-400' 
+              (hoverRating >= star || selectedRating >= star)
+                ? 'text-yellow-400 fill-yellow-400'
                 : 'text-gray-300'
             } ${userRating != null ? 'cursor-not-allowed' : ''}`}
           />
@@ -52,6 +125,9 @@ const RatingStars = ({ productId, currentAverageRating, onRatingSubmit, isAuthen
   );
 };
 
+/* -------------------------------
+   ProductDetailPage Component
+---------------------------------- */
 const ProductDetailPage = () => {
   const { productId } = useParams();
   const [product, setProduct] = useState(null);
@@ -141,7 +217,10 @@ const ProductDetailPage = () => {
           productId: product.id,
           name: product.name,
           price: product.price,
-          image: product.image,
+          // Use cover image from images array if available
+          image: (product.images && product.images.length > 0)
+                  ? product.images[0]
+                  : product.image || '',
           quantity: 1
         });
       }
@@ -170,7 +249,9 @@ const ProductDetailPage = () => {
           id: product.id,
           name: product.name,
           price: product.price,
-          image: product.image,
+          image: (product.images && product.images.length > 0)
+                  ? product.images[0]
+                  : product.image || '',
         } 
       }
     });
@@ -263,13 +344,17 @@ const ProductDetailPage = () => {
           
           <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
             <div className="grid md:grid-cols-2 gap-8">
-              {/* Product Image */}
+              {/* Product Image Carousel */}
               <div className="bg-gray-100 rounded-xl p-4 flex items-center justify-center">
-                <img 
-                  src={product.image || ''} 
-                  alt={product.name} 
-                  className="max-h-96 object-contain"
-                />
+                {product.images && product.images.length > 0 ? (
+                  <ImageCarousel images={product.images} alt={product.name} />
+                ) : (
+                  <img 
+                    src={product.image || ''} 
+                    alt={product.name} 
+                    className="max-h-96 object-contain rounded-lg"
+                  />
+                )}
               </div>
               
               {/* Product Details */}
@@ -316,7 +401,6 @@ const ProductDetailPage = () => {
                 
                 <p className="text-gray-700 mb-6">{product.description}</p>
                 
-                {/* Product features if available */}
                 {product.features && product.features.length > 0 && (
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-2">Key Features</h3>
@@ -343,18 +427,6 @@ const ProductDetailPage = () => {
                 {/* Action buttons */}
                 <div className="flex space-x-4 mt-auto">
                   <button
-                    onClick={handleBuyNow}
-                    disabled={!product.inStock}
-                    className={`flex-1 flex items-center justify-center py-3 px-6 rounded-lg transition-colors ${
-                      !product.inStock
-                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    <CreditCard className="h-5 w-5 mr-2" />
-                    Buy Now
-                  </button>
-                  <button
                     onClick={handleAddToCart}
                     disabled={!product.inStock}
                     className={`flex-1 flex items-center justify-center py-3 px-6 rounded-lg transition-colors ${
@@ -365,6 +437,18 @@ const ProductDetailPage = () => {
                   >
                     <ShoppingCart className="h-5 w-5 mr-2" />
                     Add to Cart
+                  </button>
+                  <button
+                    onClick={handleBuyNow}
+                    disabled={!product.inStock}
+                    className={`flex-1 flex items-center justify-center py-3 px-6 rounded-lg transition-colors ${
+                      !product.inStock
+                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    <CreditCard className="h-5 w-5 mr-2" />
+                    Buy Now
                   </button>
                 </div>
               </div>
@@ -380,7 +464,7 @@ const ProductDetailPage = () => {
                   <div>
                     <h3 className="font-semibold">Delivery Estimate</h3>
                     <p className="text-gray-600">
-                      {product.deliveryEstimate || '3-5 business days'}
+                      {product.deliveryEstimate || '5-9 business days'}
                     </p>
                   </div>
                 </div>
@@ -403,7 +487,7 @@ const ProductDetailPage = () => {
                       {product.warranty || '1 Year Manufacturer Warranty'}
                     </p>
                   </div>
-                </div>{/* Add more product information cards if needed */}
+                </div>
               </div>
             </div>
             
@@ -425,53 +509,6 @@ const ProductDetailPage = () => {
                 </div>
               </div>
             )}
-            
-            {/* Reviews Section */}
-            {/* <div className="mt-12 border-t pt-8">
-              <h2 className="text-2xl font-bold mb-6">Customer Reviews</h2>
-              
-              {reviews.length > 0 ? (
-                <div className="space-y-6">
-                  {reviews.map(review => (
-                    <div key={review.id} className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center mb-2">
-                        <div className="font-semibold">{review.userName || 'Anonymous'}</div>
-                        <div className="ml-4 flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
-                            />
-                          ))}
-                        </div>
-                        <div className="ml-4 text-xs text-gray-500">
-                          {review.createdAt.toLocaleDateString()}
-                        </div>
-                      </div>
-                      <p className="text-gray-700">{review.comment}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">No reviews yet for this product.</p>
-                  {user && !userRating && (
-                    <p className="mt-2 text-gray-600">Be the first to rate this product!</p>
-                  )}
-                </div>
-              )}
-            </div> */}
-            
-            {/* Related Products Section */}
-            {/* This would require additional data fetching logic */}
-            {/* <div className="mt-12 border-t pt-8">
-              <h2 className="text-2xl font-bold mb-6">You Might Also Like</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {relatedProducts.map(product => (
-                  // Related product cards would go here
-                ))}
-              </div>
-            </div> */}
           </div>
         </div>
       </div>

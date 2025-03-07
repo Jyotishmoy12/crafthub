@@ -182,7 +182,7 @@ const StackRevealGallery = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ delay: 0.1 }}
-                    className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/70 to-slate-900/40 p-4 sm:p-6 md:p-8 flex flex-col justify-end text-white"
+                    className="absolute inset-0 p-4 sm:p-6 md:p-8 flex flex-col justify-end text-white"
                   >
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
@@ -190,20 +190,9 @@ const StackRevealGallery = () => {
                       transition={{ delay: 0.2 }}
                     >
                       <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1">{artwork.title}</h2>
-                      <div className="flex items-center mb-3 text-sm md:text-base text-slate-300">
-                        <span>{artwork.artist}</span>
-                        <span className="mx-2">•</span>
-                        <span>{artwork.year}</span>
-                      </div>
+                      
                       <p className="mb-4 text-sm md:text-base opacity-90">{artwork.description}</p>
-                      {/* <div className="mt-2 flex gap-3">
-                        <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm transition-colors">
-                          View Details
-                        </button>
-                        <button className="px-4 py-2 bg-slate-700/60 hover:bg-slate-600/60 rounded-lg text-white text-sm transition-colors">
-                          Share
-                        </button>
-                      </div> */}
+                     
                     </motion.div>
                   </motion.div>
                 )}

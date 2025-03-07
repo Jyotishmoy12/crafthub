@@ -97,15 +97,15 @@ const CoursePage = () => {
           // Update local enrollments state
           setEnrollments(prev => [...prev, { userId: user.uid, courseId: course.id, status: 'paid' }]);
           setOrderId(enrollmentId);
-          
+
           // Construct WhatsApp message with enrollment details
           const message = `New Course Enrollment\n\nEnrollment ID: ${enrollmentId}\nCourse: ${course.title}\nPrice: ₹${course.price}\nPayment ID: ${response.razorpay_payment_id}\nName: ${user.displayName || ''}\nEmail: ${user.email}`;
           const adminNumber = '916000460553'; // Replace with your admin's phone number (without the +)
           const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-          const url = isMobile 
+          const url = isMobile
             ? `whatsapp://send?phone=${adminNumber}&text=${encodeURIComponent(message)}`
             : `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
-          
+
           // Set WhatsApp link and show modal
           setWhatsappLink(url);
           setShowWhatsAppModal(true);
@@ -134,9 +134,34 @@ const CoursePage = () => {
 
   const totalPrice = (course) => course.price; // For individual course
 
-  
 
-  if (loading) return <div className="flex justify-center items-center h-screen"><p>Loading courses...</p></div>;
+
+  if (loading) return <div className="flex justify-center items-center h-screen">
+    <div className="flex flex-col items-center">
+      {/* Spinner */}
+      <svg
+        className="animate-spin h-8 w-8 text-blue-500 mb-2"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        ></circle>
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+        ></path>
+      </svg>
+      <p>Loading courses...</p>
+    </div>
+  </div>;
   if (!courses.length)
     return (
       <div className="text-center mt-12 text-xl font-semibold">
@@ -149,7 +174,7 @@ const CoursePage = () => {
       <Navbar />
       <Toaster position="top-right" reverseOrder={false} />
       <div className="max-w-6xl mx-auto p-6">
-        <h1 className="text-4xl font-bold text-center my-8">Courses</h1>
+        <h1 className="text-4xl font-bold text-center my-20">Courses</h1>
         <ul className="space-y-8">
           {courses.map((course) => (
             <li
@@ -172,25 +197,23 @@ const CoursePage = () => {
                 <div className="mt-4 flex gap-4">
                   <button
                     onClick={() => handlePayment(course)}
-                    className={`inline-block text-white px-4 py-2 rounded transition ${
-                      isEnrolled(course.id)
+                    className={`inline-block text-white px-4 py-2 rounded transition ${isEnrolled(course.id)
                         ? "bg-gray-500 cursor-not-allowed"
                         : "bg-blue-600 hover:bg-blue-700"
-                    }`}
+                      }`}
                     disabled={isEnrolled(course.id)}
                   >
                     {isEnrolled(course.id) ? "Enrolled" : "Enroll"}
                   </button>
                   <button
                     onClick={() => navigate(`/coursedetails/${course.id}`)}
-                    className={`inline-block text-white px-4 py-2 rounded transition ${
-                      !isEnrolled(course.id)
+                    className={`inline-block text-white px-4 py-2 rounded transition ${!isEnrolled(course.id)
                         ? "bg-gray-500 cursor-not-allowed"
                         : "bg-green-600 hover:bg-green-700"
-                    }`}
+                      }`}
                     disabled={!isEnrolled(course.id)}
                   >
-                    View Details
+                    Access Course
                   </button>
                 </div>
               </div>
