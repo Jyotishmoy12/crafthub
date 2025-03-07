@@ -11,6 +11,10 @@ const HeroSection = () => {
   const goToProductsPage=()=>{
     navigate('/products');
   }
+
+  const goToCoursePage=()=>{
+    navigate('/courses');
+  }
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -210,7 +214,7 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.8 }}
             >
-              <button className="px-8 py-3 bg-indigo-600 text-white rounded-lg font-medium relative overflow-hidden group">
+              <button className="px-8 py-3 bg-indigo-600 text-white rounded-lg font-medium relative overflow-hidden group" onClick={goToCoursePage}>
                 <span className="relative z-10 cursor-pointer">Explore Courses</span>
                 <span className="absolute top-0 left-0 w-full h-0 bg-indigo-700 transition-all duration-300 group-hover:h-full -z-0"></span>
               </button>

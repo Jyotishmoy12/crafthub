@@ -3,7 +3,7 @@ import { collection, getDocs, getDoc, updateDoc, doc, setDoc } from 'firebase/fi
 import { db, auth } from '../../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Search, Star, ShoppingCart, CreditCard } from 'lucide-react';
+import { Search, Star, ShoppingCart, CreditCard, Eye } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import Navbar from "../components/Navbar";
 import Footer from '../components/Footer';
@@ -155,6 +155,10 @@ const ProductsPage = () => {
     });
   };
 
+  const handleViewDetails = (productId) => {
+    navigate(`/product/${productId}`);
+  };
+
   const handleRatingSubmit = async (productId, rating) => {
     try {
       if (!user) return;
@@ -251,7 +255,10 @@ const ProductsPage = () => {
                   key={product.id} 
                   className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
                 >
-                  <div className="relative">
+                  <div 
+                    className="relative cursor-pointer" 
+                    onClick={() => handleViewDetails(product.id)}
+                  >
                     <img
                       src={product.image || ''}
                       alt={product.name}
@@ -265,7 +272,12 @@ const ProductsPage = () => {
                   </div>
                   
                   <div className="p-5">
-                    <h2 className="text-xl font-bold mb-2">{product.name}</h2>
+                    <h2 
+                      className="text-xl font-bold mb-2 cursor-pointer hover:text-blue-600 transition-colors"
+                      onClick={() => handleViewDetails(product.id)}
+                    >
+                      {product.name}
+                    </h2>
                     <p className="text-gray-600 mb-4 h-12 overflow-hidden">{product.description}</p>
                     
                     <div className="flex justify-between items-center mb-4">
@@ -296,30 +308,37 @@ const ProductsPage = () => {
                       userRating={product.userRating}
                     />
 
-                    <div className="mt-6 flex space-x-3">
+                    <div className="mt-6 grid grid-cols-2 gap-2">
                       <button
                         onClick={() => handleBuyNow(product)}
                         disabled={!product.inStock}
-                        className={`flex-1 flex items-center justify-center cursor-pointer py-2 rounded-lg transition-colors ${
+                        className={`flex items-center justify-center cursor-pointer py-2 rounded-lg transition-colors ${
                           !product.inStock
                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             : 'bg-blue-600 text-white hover:bg-blue-700'
                         }`}
                       >
-                        <CreditCard className="h-5 w-5 mr-2" />
+                        <CreditCard className="h-4 w-4 mr-1" />
                         Buy Now
                       </button>
                       <button
                         onClick={() => handleAddToCart(product)}
                         disabled={!product.inStock}
-                        className={`flex-1 flex items-center cursor-pointer justify-center py-2 rounded-lg transition-colors ${
+                        className={`flex items-center cursor-pointer justify-center py-2 rounded-lg transition-colors ${
                           !product.inStock
                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             : 'bg-green-50 text-green-600 hover:bg-green-100'
                         }`}
                       >
-                        <ShoppingCart className="h-5 w-5 mr-2" />
-                        {product.inStock ? 'Add to Cart' : 'Sold Out'}
+                        <ShoppingCart className="h-4 w-4 mr-1" />
+                        Cart
+                      </button>
+                      <button
+                        onClick={() => handleViewDetails(product.id)}
+                        className="col-span-2 flex items-center justify-center py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 transition-colors"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
                       </button>
                     </div>
                   </div>
