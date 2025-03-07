@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // Added useNavigate
+import { useParams, useNavigate } from 'react-router-dom';
 import { db, auth } from '../../firebaseConfig';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
@@ -18,7 +18,7 @@ const Loader = () => (
 
 const CourseDetails = () => {
   const { courseId } = useParams();
-  const navigate = useNavigate(); // Added navigate hook
+  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,20 +33,29 @@ const CourseDetails = () => {
     return unsubscribe;
   }, []);
 
-  // Session token check: if the stored token differs from the local token, sign out and redirect to "/"
-  useEffect(() => {
+  // Check session token function: runs only when this page is active.
+  const checkSessionToken = async () => {
     if (!user) return;
-    const sessionUnsubscribe = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-      const data = docSnap.data();
-      const localToken = localStorage.getItem("sessionToken");
-      if (data && data.activeSessionToken && data.activeSessionToken !== localToken) {
-        signOut(auth).then(() => {
-          alert("You have been logged out because your account was signed in on another device.");
-          navigate("/"); // Redirect to home route
-        });
+    const localToken = localStorage.getItem("sessionToken");
+    const docSnap = await getDoc(doc(db, "users", user.uid));
+    const data = docSnap.data();
+    if (data && data.activeSessionToken && data.activeSessionToken !== localToken) {
+      // If the page is in focus, sign out
+      if (document.visibilityState === "visible") {
+        await signOut(auth);
+        alert("You have been logged out because your account was signed in on another device.");
+        navigate("/");
       }
-    });
-    return () => sessionUnsubscribe();
+    }
+  };
+
+  // Run check on mount and when window gains focus
+  useEffect(() => {
+    // Check immediately when component mounts
+    checkSessionToken();
+    // Attach focus event handler
+    window.addEventListener("focus", checkSessionToken);
+    return () => window.removeEventListener("focus", checkSessionToken);
   }, [user, navigate]);
 
   // Prevent right-click and PrintScreen key
@@ -80,11 +89,8 @@ const CourseDetails = () => {
         alert('Copy function is disabled on this video.');
       }
     };
-
     document.addEventListener('copy', handleCopy);
-    return () => {
-      document.removeEventListener('copy', handleCopy);
-    };
+    return () => document.removeEventListener('copy', handleCopy);
   }, []);
 
   // Fetch course data from Firestore
