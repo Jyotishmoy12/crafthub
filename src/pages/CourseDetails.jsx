@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { db, auth } from '../../firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore'; // Added onSnapshot import
+import { signOut } from 'firebase/auth'; // Imported signOut for logging out
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import { Maximize } from 'lucide-react';
@@ -31,6 +32,23 @@ const CourseDetails = () => {
     });
     return unsubscribe;
   }, []);
+
+  // *** NEW: Session token check effect ***
+  // This effect listens for changes in the user's Firestore doc and compares the activeSessionToken
+  // with the token saved in localStorage. If they don't match, the user is logged out.
+  useEffect(() => {
+    if (!user) return;
+    const sessionUnsubscribe = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+      const data = docSnap.data();
+      const localToken = localStorage.getItem("sessionToken");
+      if (data && data.activeSessionToken && data.activeSessionToken !== localToken) {
+        signOut(auth);
+        alert("You have been logged out because your account was signed in on another device.");
+      }
+    });
+    return () => sessionUnsubscribe();
+  }, [user]);
+  // *** End of session token check effect ***
 
   // Prevent right-click and PrintScreen key
   useEffect(() => {
