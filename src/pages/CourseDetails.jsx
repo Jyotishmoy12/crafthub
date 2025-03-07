@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // Added useNavigate
 import { db, auth } from '../../firebaseConfig';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore'; // Added onSnapshot import
-import { signOut } from 'firebase/auth'; // Imported signOut for logging out
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import { Maximize } from 'lucide-react';
@@ -18,11 +18,11 @@ const Loader = () => (
 
 const CourseDetails = () => {
   const { courseId } = useParams();
+  const navigate = useNavigate(); // Added navigate hook
   const [course, setCourse] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  // Ref for the video container only (not the whole page)
   const videoContainerRef = useRef(null);
 
   // Get authenticated user
@@ -33,22 +33,21 @@ const CourseDetails = () => {
     return unsubscribe;
   }, []);
 
-  // *** NEW: Session token check effect ***
-  // This effect listens for changes in the user's Firestore doc and compares the activeSessionToken
-  // with the token saved in localStorage. If they don't match, the user is logged out.
+  // Session token check: if the stored token differs from the local token, sign out and redirect to "/"
   useEffect(() => {
     if (!user) return;
     const sessionUnsubscribe = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
       const data = docSnap.data();
       const localToken = localStorage.getItem("sessionToken");
       if (data && data.activeSessionToken && data.activeSessionToken !== localToken) {
-        signOut(auth);
-        alert("You have been logged out because your account was signed in on another device.");
+        signOut(auth).then(() => {
+          alert("You have been logged out because your account was signed in on another device.");
+          navigate("/"); // Redirect to home route
+        });
       }
     });
     return () => sessionUnsubscribe();
-  }, [user]);
-  // *** End of session token check effect ***
+  }, [user, navigate]);
 
   // Prevent right-click and PrintScreen key
   useEffect(() => {
@@ -144,7 +143,6 @@ const CourseDetails = () => {
       </div>
     );
 
-  // Disable YouTube native fullscreen and branding with fs=0 and modestbranding=1
   const videoId = selectedVideo ? extractYoutubeId(selectedVideo.youtubeUrl) : null;
   const embedUrl = videoId
     ? `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&controls=1&fs=0`
@@ -161,7 +159,6 @@ const CourseDetails = () => {
           {course.description}
         </p>
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Video Player Container (only this container goes fullscreen) */}
           <div className="w-full md:flex-1">
             <div
               ref={videoContainerRef}
@@ -183,7 +180,6 @@ const CourseDetails = () => {
                   {user && (
                     <span className="watermark">{user.email}</span>
                   )}
-                  {/* Overlay for mobile screens to block share icon */}
                   <div
                     className="mobile-share-overlay"
                     onClick={(e) => {
@@ -191,7 +187,6 @@ const CourseDetails = () => {
                       e.stopPropagation();
                     }}
                   />
-                  {/* Overlay for desktop screens to block copy link */}
                   <div
                     className="desktop-copy-overlay"
                     onClick={(e) => {
@@ -206,7 +201,6 @@ const CourseDetails = () => {
                 </p>
               )}
             </div>
-            {/* Custom Fullscreen Button for Video */}
             <div className="text-right mt-4">
               <button
                 onClick={handleFullScreen}
@@ -216,7 +210,6 @@ const CourseDetails = () => {
               </button>
             </div>
           </div>
-          {/* Video Thumbnails */}
           <div className="w-full md:w-60">
             <h2 className="text-2xl font-semibold mb-4">Videos</h2>
             {course.videos && course.videos.length > 0 ? (
@@ -254,7 +247,6 @@ const CourseDetails = () => {
         </div>
       </div>
       <Footer />
-      {/* CSS for animated watermark, fullscreen adjustments, and overlays */}
       <style>{`
         .video-container:fullscreen {
           padding: 0;
@@ -277,7 +269,6 @@ const CourseDetails = () => {
           75% { top: 85%; left: 5%; }
           100% { top: 5%; left: 5%; }
         }
-        /* Mobile overlay to block share icon */
         @media (max-width: 768px) {
           .mobile-share-overlay {
             position: absolute;
@@ -293,7 +284,6 @@ const CourseDetails = () => {
             display: none;
           }
         }
-        /* Desktop overlay to block copy link */
         @media (min-width: 769px) {
           .desktop-copy-overlay {
             position: absolute;

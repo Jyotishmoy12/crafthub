@@ -8,8 +8,8 @@ import {
   GoogleAuthProvider 
 } from 'firebase/auth';
 import { auth, db } from '../../firebaseConfig'; 
-import { doc, setDoc } from 'firebase/firestore'; // Imported Firestore functions
-import { v4 as uuidv4 } from 'uuid'; // Imported UUID for generating session tokens
+import { doc, setDoc } from 'firebase/firestore';
+import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from 'react-router-dom';
 import { Palette } from 'lucide-react';
 import { FaGoogle } from "react-icons/fa";
