@@ -11,6 +11,8 @@ const CertificateSlider = () => {
   ];
 
   return (
+    <>
+    <h1 className="text-center font-bold text-3xl"><span className='text-blue-700'>My</span> <span className='text-orange-600'>Certificates</span></h1>
     <div className="relative w-full overflow-hidden py-12">
       <div className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none">
         <div className="absolute inset-y-0 left-0 w-1/6 bg-gradient-to-r from-gray-50 to-transparent z-20" />
@@ -63,6 +65,7 @@ const CertificateSlider = () => {
         </div>
       </motion.div>
     </div>
+    </>
   );
 };
 

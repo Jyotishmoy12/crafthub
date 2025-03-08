@@ -194,10 +194,10 @@ const CoursePage = () => {
       <Navbar />
       <Toaster position="top-right" reverseOrder={false} />
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
-        <h1 className="text-3xl sm:text-4xl font-bold text-center my-25 sm:my-20">Courses</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-center my-25 sm:my-20">Explore Courses</h1>
         
         {/* Search Box */}
-        <div className="relative mx-auto max-w-md mb-8">
+        <div className="relative mx-auto max-w-md mb-8 -my-20">
           <div className="flex items-center border-2 rounded-lg overflow-hidden focus-within:border-blue-500 transition-colors">
             <input
               type="text"

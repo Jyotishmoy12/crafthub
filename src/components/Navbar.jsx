@@ -15,7 +15,7 @@ const Navbar = () => {
   const location = useLocation();
 
   // Determine if we are on pages where Profile link should be shown
-  const showProfileLink = location.pathname === '/products' || location.pathname === '/courses';
+  const showProfileLink = location.pathname === '/products' || location.pathname === '/courses' || location.pathname === '/';
 
   // Listen for auth changes and update admin state if needed
   useEffect(() => {
@@ -136,7 +136,7 @@ const Navbar = () => {
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <div className="flex items-center">
                   <img
-                    src="crafthublogo.png"
+                    src="/crafthublogo.png"
                     alt="CraftHub Logo"
                     className="h-10 w-10 md:h-18 md:w-18 -mr-1 sm:-mr-3"
                   />

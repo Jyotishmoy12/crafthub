@@ -32,18 +32,18 @@ const ProfilePage = () => {
             id: doc.id,
             ...doc.data()
           }));
-          
+
           // Sort orders by date (newest first)
           ordersData.sort((a, b) => {
             const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt);
             const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt);
             return dateB - dateA;
           });
-          
+
           setOrders(ordersData);
         } catch (error) {
           console.error("Error fetching orders:", error);
-          toast.error('Failed to fetch orders', { 
+          toast.error('Failed to fetch orders', {
             icon: '❌',
             style: { background: '#FEE2E2', color: '#B91C1C' },
           });
@@ -86,7 +86,7 @@ const ProfilePage = () => {
           setEnrolledCourses(coursesData.filter(course => course !== null));
         } catch (error) {
           console.error("Error fetching enrolled courses:", error);
-          toast.error('Failed to fetch enrolled courses', { 
+          toast.error('Failed to fetch enrolled courses', {
             icon: '❌',
             style: { background: '#FEE2E2', color: '#B91C1C' },
           });
@@ -104,7 +104,7 @@ const ProfilePage = () => {
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     document.body.appendChild(script);
-    
+
     return () => {
       document.body.removeChild(script);
     };
@@ -176,9 +176,9 @@ const ProfilePage = () => {
       if (isNaN(date.getTime())) {
         return 'Invalid date';
       }
-      return new Intl.DateTimeFormat('en-IN', { 
-        year: 'numeric', 
-        month: 'short', 
+      return new Intl.DateTimeFormat('en-IN', {
+        year: 'numeric',
+        month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
@@ -201,6 +201,91 @@ const ProfilePage = () => {
   return (
     <>
       <Navbar />
+      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-8">
+  <div className="mb-6 text-center">
+    <h1 className="text-3xl font-bold text-gray-900 my-22 md:my-20 ">
+      My Enrolled Courses
+    </h1>
+  </div>
+  {loadingEnrollments ? (
+    <div className="flex justify-center items-center py-16">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+    </div>
+  ) : enrolledCourses.length === 0 ? (
+    <div className="text-center py-16">
+      <p className="mt-4 text-xl font-semibold text-gray-900">
+        You haven't enrolled in any courses yet.
+      </p>
+      <button
+        onClick={() => navigate('/courses')}
+        className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        Browse Courses
+      </button>
+    </div>
+  ) : (
+    // Using grid layout to show two courses side by side on small screens.
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 -my-15">
+      {enrolledCourses.map((course) => (
+        <div
+          key={course.id}
+          className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300"
+        >
+          <div className="flex flex-col sm:flex-row items-center p-4">
+            <img
+              src={
+                course.thumbnailUrl ||
+                (course.videos && course.videos[0]?.thumbnailUrl) ||
+                'https://via.placeholder.com/300x200?text=No+Thumbnail'
+              }
+              alt={course.title}
+              className="w-full h-40 object-cover sm:mx-0"
+            />
+            <div className="flex-1 mt-4 sm:mt-0 sm:ml-4 text-center sm:text-left">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {course.title}
+              </h2>
+              <p className="text-gray-600 mt-1">{course.description}</p>
+              {/* {course.enrollmentStatus && (
+                course.enrollmentStatus === 'paid' ? (
+                  <p className="mt-1 text-sm text-green-600 font-semibold">
+                    Enrolled
+                  </p>
+                ) : (
+                  <p className="mt-1 text-sm text-yellow-600 font-semibold">
+                    {course.enrollmentStatus}
+                  </p>
+                )
+              )} */}
+            </div>
+            <div className="mt-4 sm:mt-0 flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto justify-center">
+              {course.enrollmentStatus !== 'paid' && (
+                <button
+                  onClick={() => handleEnrollmentPayment(course)}
+                  className="inline-block text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition w-full sm:w-auto"
+                >
+                  Enroll
+                </button>
+              )}
+              <button
+                onClick={() => navigate(`/coursedetails/${course.id}`)}
+                className={`inline-block text-white px-4 py-2 rounded-sm transition w-full sm:w-auto text-xl  ${
+                  course.enrollmentStatus !== 'paid'
+                    ? 'bg-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+                disabled={course.enrollmentStatus !== 'paid'}
+              >
+                View Enrolled Course
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
       <div className="min-h-screen bg-gray-50 pt-8 pb-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Orders Section (Existing Functionality) */}
@@ -211,12 +296,12 @@ const ProfilePage = () => {
             </div>
             {orders.length === 0 ? (
               <div className="text-center py-16">
-                <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="mx-auto h-16 w-16 text-gray-400 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
                 <h2 className="mt-4 text-xl font-medium text-gray-900">No orders yet</h2>
                 <p className="mt-2 text-gray-500">You haven't placed any orders with us yet.</p>
-                <button 
+                <button
                   onClick={() => navigate('/products')}
                   className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
@@ -227,25 +312,25 @@ const ProfilePage = () => {
               <div className="space-y-6">
                 {orders.map(order => (
                   <div key={order.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300">
-                    <div className="border-b border-gray-200 bg-gray-50 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                    <div className="border-b border-gray-200 bg-blue-600 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                       <div>
                         <div className="flex items-center gap-2">
-                          <h2 className="text-lg font-semibold text-gray-900">Order #{order.id.slice(-8)}</h2>
+                          <h2 className="text-lg font-semibold text-white">Order #{order.id.slice(-8)}</h2>
                           {order.paymentInfo && (
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.paymentInfo.status)}`}>
                               {order.paymentInfo.status}
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-gray-500 mt-1 text-white">
                           {order.createdAt ? `Placed on ${formatDate(order.createdAt)}` : 'Date unavailable'}
                         </p>
                       </div>
                       <div className="mt-2 sm:mt-0 flex items-center">
-                        <span className="text-xl font-bold text-gray-900">₹{order.total.toFixed(2)}</span>
+                        <span className="text-xl font-bold text-white">₹{order.total.toFixed(2)}</span>
                       </div>
                     </div>
-                    
+
                     <div className="px-6 py-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -275,7 +360,7 @@ const ProfilePage = () => {
                             ))}
                           </div>
                         </div>
-                        
+
                         <div>
                           <div className="mb-6">
                             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Shipping Details</h3>
@@ -295,18 +380,17 @@ const ProfilePage = () => {
                               <p className="text-sm text-gray-500">No shipping information available</p>
                             )}
                           </div>
-                          
+
                           <div>
                             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Payment Information</h3>
                             {order.paymentInfo ? (
                               <div className="text-sm text-gray-600 space-y-1 bg-gray-50 p-3 rounded-lg border border-gray-200">
                                 <p><span className="text-gray-500">Payment ID:</span> <span className="font-mono">{order.paymentInfo.razorpayPaymentId}</span></p>
                                 <p className="flex justify-between">
-                                  <span className="text-gray-500">Status:</span> 
-                                  <span className={`font-medium ${
-                                    order.paymentInfo.status.toLowerCase() === 'completed' ? 'text-green-600' : 
+                                  <span className="text-gray-500">Status:</span>
+                                  <span className={`font-medium ${order.paymentInfo.status.toLowerCase() === 'completed' ? 'text-green-600' :
                                     order.paymentInfo.status.toLowerCase() === 'pending' ? 'text-yellow-600' : 'text-gray-900'
-                                  }`}>
+                                    }`}>
                                     {order.paymentInfo.status}
                                   </span>
                                 </p>
@@ -318,10 +402,10 @@ const ProfilePage = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="px-6 py-3 bg-gray-50 border-t border-gray-200">
                       <div className="text-sm">
-                        <span className="text-gray-500">Total Items:</span> 
+                        <span className="text-gray-500">Total Items:</span>
                         <span className="ml-1 font-medium">
                           {order.items ? order.items.reduce((acc, item) => acc + item.quantity, 0) : 0}
                         </span>
@@ -333,70 +417,7 @@ const ProfilePage = () => {
             )}
           </div>
 
-          {/* Enrolled Courses Section */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">My Enrolled Courses</h1>
-              <p className="text-gray-500 mt-1">View your enrolled courses and access course details</p>
-            </div>
-            {loadingEnrollments ? (
-              <div className="flex justify-center items-center py-16">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
-              </div>
-            ) : enrolledCourses.length === 0 ? (
-              <div className="text-center py-16">
-                <p className="mt-4 text-xl font-semibold text-gray-900">You haven't enrolled in any courses yet.</p>
-                <button 
-                  onClick={() => navigate('/courses')}
-                  className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Browse Courses
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {enrolledCourses.map(course => (
-                  <div key={course.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300">
-                    <div className="flex flex-col sm:flex-row items-center p-4">
-                      <img 
-                        src={course.thumbnailUrl || 'https://via.placeholder.com/300x200?text=No+Thumbnail'} 
-                        alt={course.title} 
-                        className="w-32 h-20 object-cover rounded-lg mr-4" 
-                      />
-                      <div className="flex-1">
-                        <h2 className="text-xl font-semibold text-gray-900">{course.title}</h2>
-                        <p className="text-gray-600 mt-1">{course.description}</p>
-                        {course.enrollmentStatus && (
-                          course.enrollmentStatus === 'paid' ? (
-                            <p className="mt-1 text-sm text-green-600 font-semibold">Enrolled</p>
-                          ) : (
-                            <p className="mt-1 text-sm text-yellow-600 font-semibold">{course.enrollmentStatus}</p>
-                          )
-                        )}
-                      </div>
-                      <div className="mt-4 sm:mt-0 flex gap-4">
-                        {course.enrollmentStatus !== 'paid' && (
-                          <button
-                            onClick={() => handleEnrollmentPayment(course)}
-                            className="inline-block text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition"
-                          >
-                            Enroll
-                          </button>
-                        )}
-                        <button
-                          onClick={() => navigate(`/coursedetails/${course.id}`)}
-                          className={`inline-block text-white px-4 py-2 rounded transition ${course.enrollmentStatus !== 'paid' ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
-                          disabled={course.enrollmentStatus !== 'paid'}
-                        >
-                          View Details
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+
 
         </div>
       </div>

@@ -526,9 +526,9 @@ const ProductDetailPage = () => {
                 <div className="bg-gray-50 p-4 rounded-lg flex items-start">
                   <Shield className="h-6 w-6 text-blue-600 mr-3" />
                   <div>
-                    <h3 className="font-semibold">Warranty</h3>
+                    <h3 className="font-semibold">No Return Policy</h3>
                     <p className="text-gray-600">
-                      {product.warranty || '1 Year Manufacturer Warranty'}
+                      {product.warranty || 'No Return and Refund Policy Available'}
                     </p>
                   </div>
                 </div>

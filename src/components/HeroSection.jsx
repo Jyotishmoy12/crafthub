@@ -1,11 +1,22 @@
-import React, { useEffect, useRef, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
+import { motion , AnimatePresence} from 'framer-motion';
 import { FaFacebook, FaYoutube } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
   const canvasRef = useRef(null);
   const navigate = useNavigate();
+  
+
+  const [isEnglish, setIsEnglish] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsEnglish((prev) => !prev);
+    }, 4000); // Change every 3 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Use callbacks for navigation to avoid re-creation on every render
   const goToProductsPage = useCallback(() => {
@@ -181,26 +192,75 @@ const HeroSection = () => {
             transition={{ duration: 0.8 }}
             className="text-center md:text-left"
           >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gray-800">
-              <span className="relative inline-block">
-                <span className="relative z-10 font-semibold text-blue-700">নমস্কাৰ</span>
-                <motion.span
-                  className="absolute -bottom-2 left-0 w-full h-3 bg-yellow-200 -z-10"
-                  initial={{ width: 0 }}
-                  animate={{ width: '100%' }}
-                  transition={{ delay: 0.5, duration: 0.4 }}
-                />
-              </span>{" "}
-              <span className="relative inline-block">
-                <span className="relative z-10 text-orange-600">স্বাগতম</span>
-                <motion.span
-                  className="absolute -bottom-2 left-0 w-full h-3 bg-pink-200 -z-10"
-                  initial={{ width: 0 }}
-                  animate={{ width: '100%' }}
-                  transition={{ delay: 0.7, duration: 0.4 }}
-                />
-              </span>
-            </h1>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gray-800 flex space-x-3">
+         <span className="relative inline-block">
+        <AnimatePresence mode="wait">
+          {isEnglish ? (
+            <motion.span
+              key="hello"
+              className="relative z-10 font-serif italic text-blue-700"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.2 }}
+              transition={{ duration: 0.8 }}
+            >
+              Hello
+            </motion.span>
+          ) : (
+            <motion.span
+              key="namaskar"
+              className="relative z-10 font-semibold  text-blue-700"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.2 }}
+              transition={{ duration: 0.8 }}
+            >
+              নমস্কাৰ
+            </motion.span>
+          )}
+        </AnimatePresence>
+        <motion.span
+          className="absolute -bottom-2 left-0 w-full h-3 bg-yellow-200 -z-10"
+          initial={{ width: 0 }}
+          animate={{ width: "100%" }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+        />
+      </span>
+
+      <span className="relative inline-block">
+        <AnimatePresence mode="wait">
+          {isEnglish ? (
+            <motion.span
+              key="welcome"
+              className="relative z-10 font-serif italic text-orange-600"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.2 }}
+              transition={{ duration: 0.8 }}
+            >
+              Welcome
+            </motion.span>
+          ) : (
+            <motion.span
+              key="swagatom"
+              className="relative z-10 text-orange-600 font-semibold"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.2 }}
+              transition={{ duration: 0.8 }}
+            >
+              স্বাগতম
+            </motion.span>
+          )}
+        </AnimatePresence>
+        <motion.span
+          className="absolute -bottom-2 left-0 w-full h-3 bg-pink-200 -z-10"
+          initial={{ width: 0 }}
+          animate={{ width: "100%" }}
+          transition={{ delay: 0.5, duration: 0.4 }}
+        />
+      </span>
+    </h1>
 
             <motion.p
               className="text-lg text-gray-600 mb-8 max-w-lg mx-auto md:mx-0"
