@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { motion , AnimatePresence} from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FaFacebook, FaYoutube } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
   const canvasRef = useRef(null);
   const navigate = useNavigate();
-  
+
 
   const [isEnglish, setIsEnglish] = useState(false);
 
@@ -211,7 +211,7 @@ const HeroSection = () => {
                     >
                       Hello
                     </motion.span>
-                    
+
                   ) : (
                     <motion.span
                       key="namaskar"
@@ -333,7 +333,7 @@ const HeroSection = () => {
                 />
 
                 {/* Existing craft tools floating */}
-                <motion.div 
+                <motion.div
                   className="absolute top-1/4 left-1/4 w-16 h-16"
                   animate={{ y: [0, -15, 0], rotate: [0, 10, 0] }}
                   transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse' }}
@@ -347,7 +347,7 @@ const HeroSection = () => {
                   </svg>
                 </motion.div>
 
-                <motion.div 
+                <motion.div
                   className="absolute bottom-1/4 right-1/4 w-14 h-14"
                   animate={{ y: [0, 12, 0], rotate: [0, -5, 0] }}
                   transition={{ duration: 5, repeat: Infinity, repeatType: 'reverse' }}
@@ -361,7 +361,7 @@ const HeroSection = () => {
                   </svg>
                 </motion.div>
 
-                <motion.div 
+                <motion.div
                   className="absolute top-1/3 right-1/4 w-12 h-12"
                   animate={{ x: [0, 10, 0], rotate: [0, 15, 0] }}
                   transition={{ duration: 7, repeat: Infinity, repeatType: 'reverse' }}
@@ -376,7 +376,7 @@ const HeroSection = () => {
                   </svg>
                 </motion.div>
 
-                <motion.div 
+                <motion.div
                   className="absolute bottom-1/3 left-1/4 w-10 h-10"
                   animate={{ x: [0, -8, 0], rotate: [0, -10, 0] }}
                   transition={{ duration: 4, repeat: Infinity, repeatType: 'reverse' }}
@@ -393,7 +393,7 @@ const HeroSection = () => {
                 {/* Additional small floating icons for extra flair */}
 
                 {/* Scissors icon */}
-                <motion.div 
+                <motion.div
                   className="absolute top-16 left-16 w-6 h-6"
                   animate={{ rotate: [0, 15, 0], scale: [1, 1.1, 1] }}
                   transition={{ duration: 5, repeat: Infinity, repeatType: 'reverse' }}
@@ -414,7 +414,7 @@ const HeroSection = () => {
                   transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse' }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="#DB2777" strokeWidth="1.5" className="w-full h-full">
-                    <path d="M2.75 18.75l1.06-1.06a3.75 3.75 0 015.3 0l.71.71a3.75 3.75 0 005.3 0l3.29-3.29a2.25 2.25 0 000-3.18l-7.07-7.07a2.25 2.25 0 00-3.18 0L5.93 6.82a3.75 3.75 0 000 5.3l.71.71a3.75 3.75 0 010 5.3l-1.06 1.06m1.06-1.06l1.06 1.06" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M2.75 18.75l1.06-1.06a3.75 3.75 0 015.3 0l.71.71a3.75 3.75 0 005.3 0l3.29-3.29a2.25 2.25 0 000-3.18l-7.07-7.07a2.25 2.25 0 00-3.18 0L5.93 6.82a3.75 3.75 0 000 5.3l.71.71a3.75 3.75 0 010 5.3l-1.06 1.06m1.06-1.06l1.06 1.06" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </motion.div>
               </div>
