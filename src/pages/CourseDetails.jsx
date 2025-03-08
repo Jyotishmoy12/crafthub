@@ -150,7 +150,7 @@ const CourseDetails = () => {
         </div>
         <h2 className="text-2xl font-bold text-gray-800">Course not found</h2>
         <p className="mt-2 text-gray-600">The course you're looking for doesn't exist or you don't have access to it.</p>
-        <button 
+        <button
           onClick={() => navigate('/')}
           className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300"
         >
@@ -177,10 +177,10 @@ const CourseDetails = () => {
               {course.description}
             </p>
           </div>
-          
+
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="w-full lg:w-3/4">
-              <div 
+              <div
                 ref={videoContainerRef}
                 className="relative video-container bg-black rounded-xl overflow-hidden shadow-lg"
                 style={{ aspectRatio: '16/9', width: '100%' }}
@@ -223,11 +223,12 @@ const CourseDetails = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="flex justify-between items-center mt-4">
-                <h2 className="text-xl font-semibold text-gray-800">
+                <h2 className="text-sm md:text-xl font-semibold text-gray-800">
                   {selectedVideo?.title || "Select a video to play"}
                 </h2>
+
                 <button
                   onClick={handleFullScreen}
                   className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300"
@@ -236,7 +237,7 @@ const CourseDetails = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="w-full lg:w-1/4">
               <div className="bg-gray-100 rounded-xl p-4">
                 <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200">
@@ -247,15 +248,14 @@ const CourseDetails = () => {
                     {course.videos.map((video, index) => {
                       const isSelected = selectedVideo === video;
                       const thumbnailId = extractYoutubeId(video.youtubeUrl);
-                      
+
                       return (
                         <div
                           key={index}
-                          className={`group relative rounded-lg overflow-hidden cursor-pointer transition-all duration-300 ${
-                            isSelected 
-                              ? 'ring-2 ring-indigo-600 shadow-md' 
+                          className={`group relative rounded-lg overflow-hidden cursor-pointer transition-all duration-300 ${isSelected
+                              ? 'ring-2 ring-indigo-600 shadow-md'
                               : 'hover:shadow-md'
-                          }`}
+                            }`}
                           onClick={() => setSelectedVideo(video)}
                           onContextMenu={(e) => e.preventDefault()}
                         >
