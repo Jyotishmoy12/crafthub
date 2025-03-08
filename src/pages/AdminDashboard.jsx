@@ -9,10 +9,9 @@ import {
 } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../../firebaseConfig';
-import { Trash2, Edit, PlusCircle } from 'lucide-react';
+import { Trash2, Edit, PlusCircle, Search } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import AdminDashboardCourse from '../components/AdminDashboardCourse';
-// import { toast } from 'react-toastify';
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
@@ -29,6 +28,8 @@ const AdminDashboard = () => {
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [isProductLoading, setIsProductLoading] = useState(false);
+  // New state for search term
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   // Cloudinary configuration from environment variables
@@ -214,6 +215,11 @@ const AdminDashboard = () => {
     }
   };
 
+  // Filter products based on search term
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <>
       <Navbar/>
@@ -291,7 +297,7 @@ const AdminDashboard = () => {
               required
               step="0.01"
             />
-            <input
+            {/* <input
               type="number"
               placeholder="Ratings"
               value={editingProduct ? editingProduct.ratings : newProduct.ratings}
@@ -303,7 +309,7 @@ const AdminDashboard = () => {
               className="border p-2 rounded"
               step="0.1"
               max="5"
-            />
+            /> */}
             <div className="col-span-2 mt-4">
               <label className="flex items-center space-x-2">
                 <input
@@ -396,9 +402,25 @@ const AdminDashboard = () => {
           </div>
         </form>
 
+        {/* Updated Search Bar */}
+        <div className="mb-6 flex justify-center">
+          <div className="relative w-80">
+            <input 
+              type="text" 
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border p-2 rounded w-full pl-10"
+            />
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <Search className="h-5 w-5 text-gray-500" />
+            </div>
+          </div>
+        </div>
+
         {/* Product List */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <div 
               key={product.id} 
               className="bg-white rounded-lg shadow-md overflow-hidden"

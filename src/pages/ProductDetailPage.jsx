@@ -8,7 +8,6 @@ import {
   ArrowRight, 
   Clock, 
   Package, 
-  Truck, 
   Shield, 
   Star, 
   ShoppingCart, 
@@ -18,15 +17,9 @@ import { toast, Toaster } from 'react-hot-toast';
 import Navbar from "../components/Navbar";
 import Footer from '../components/Footer';
 
-/* -------------------------------
-   ImageCarousel Component
-   -------------------------------
-   This component accepts an array of image URLs and displays
-   them in a carousel with next/prev navigation and thumbnails.
----------------------------------- */
+// --- ImageCarousel, RatingStars components remain unchanged ---
 const ImageCarousel = ({ images, alt }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-
   if (!images || images.length === 0) return null;
 
   const nextImage = () => {
@@ -60,7 +53,6 @@ const ImageCarousel = ({ images, alt }) => {
           </button>
         </>
       )}
-      {/* Thumbnail navigation */}
       {images.length > 1 && (
         <div className="flex justify-center mt-4 space-x-2">
           {images.map((img, index) => (
@@ -78,9 +70,6 @@ const ImageCarousel = ({ images, alt }) => {
   );
 };
 
-/* -------------------------------
-   RatingStars Component (unchanged)
----------------------------------- */
 const RatingStars = ({ productId, currentAverageRating, onRatingSubmit, isAuthenticated, userRating }) => {
   const [hoverRating, setHoverRating] = useState(0);
   const [selectedRating, setSelectedRating] = useState(userRating || 0);
@@ -125,18 +114,65 @@ const RatingStars = ({ productId, currentAverageRating, onRatingSubmit, isAuthen
   );
 };
 
-/* -------------------------------
-   ProductDetailPage Component
----------------------------------- */
 const ProductDetailPage = () => {
   const { productId } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userRating, setUserRating] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [cartCount, setCartCount] = useState(0);
   const [user, loadingUser] = useAuthState(auth);
-  const navigate = useNavigate();
 
+  // Function to navigate to the Cart page
+  const goToCart = () => {
+    if (user) {
+      navigate('/cart');
+    } else {
+      toast.error("Please log in to view your cart");
+      navigate('/auth');
+    }
+  };
+
+  // Fetch cart count for logged-in user
+  useEffect(() => {
+    if (user) {
+      const fetchCartCount = async () => {
+        try {
+          const cartItemsRef = collection(db, 'carts', user.uid, 'items');
+          const cartSnapshot = await getDocs(cartItemsRef);
+          let count = 0;
+          cartSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            count += data.quantity || 0;
+          });
+          setCartCount(count);
+        } catch (error) {
+          console.error("Error fetching cart count:", error);
+        }
+      };
+      fetchCartCount();
+    } else {
+      setCartCount(0);
+    }
+  }, [user]);
+
+  // Define the CartIcon component for the product detail page
+  const CartIcon = ({ showLabel = false, className = "" }) => (
+    <div className={`relative flex items-center ${className}`}>
+      <button onClick={goToCart} className="p-2 flex items-center bg-white rounded-full shadow-md hover:shadow-lg transition">
+        <ShoppingCart className="w-6 h-6 text-gray-700 " />
+        {showLabel && <span className="ml-2 text-gray-700">Cart</span>}
+      </button>
+      {cartCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+          {cartCount}
+        </span>
+      )}
+    </div>
+  );
+
+  // Fetch product details, user rating, and reviews
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
@@ -193,6 +229,7 @@ const ProductDetailPage = () => {
     }
   }, [productId, user, loadingUser, navigate]);
   
+  // Add to Cart functionality
   const handleAddToCart = async () => {
     if (!user) {
       toast.error("Please log in to add items to your cart");
@@ -217,7 +254,6 @@ const ProductDetailPage = () => {
           productId: product.id,
           name: product.name,
           price: product.price,
-          // Use cover image from images array if available
           image: (product.images && product.images.length > 0)
                   ? product.images[0]
                   : product.image || '',
@@ -231,6 +267,7 @@ const ProductDetailPage = () => {
     }
   };
   
+  // Buy Now functionality
   const handleBuyNow = () => {
     if (!user) {
       toast.error("Please log in to make a purchase");
@@ -257,6 +294,7 @@ const ProductDetailPage = () => {
     });
   };
   
+  // Rating submission
   const handleRatingSubmit = async (rating) => {
     try {
       if (!user) return;
@@ -332,6 +370,12 @@ const ProductDetailPage = () => {
     <>
       <Toaster position="top-right" reverseOrder={false} />
       <Navbar />
+      
+      {/* Floating Cart Icon for Product Detail Page */}
+      <div className="fixed bottom-4 right-4 z-50">
+         <CartIcon />
+      </div>
+      
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4">
           <button 
