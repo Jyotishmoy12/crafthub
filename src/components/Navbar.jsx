@@ -13,7 +13,7 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Determine if we are on pages where Profile link should be shown
   const showProfileLink = location.pathname === '/products' || location.pathname === '/courses';
 
@@ -135,10 +135,17 @@ const Navbar = () => {
             <div className="flex-shrink-0">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <div className="flex items-center">
-                  <Link to="/" className="ml-2 text-lg md:text-2xl font-bold text-blue-700">
-                    <span className="text-orange-600">CraftHub</span> by Pranabi Baruah
+                  <img
+                    src="crafthublogo.png"
+                    alt="CraftHub Logo"
+                    className="h-10 w-10 md:h-18 md:w-18 -mr-1 sm:-mr-3"
+                  />
+                  <Link to="/" className="text-lg md:text-2xl font-bold text-blue-700">
+                    <span className="text-orange-600">CraftHub</span>
+                    <span className="font-semibold text-md"> by</span> Pranabi Baruah
                   </Link>
                 </div>
+
               </motion.div>
             </div>
 
@@ -210,7 +217,7 @@ const Navbar = () => {
               {(location.pathname === '/products' || location.pathname === '/courses') && (
                 <CartIcon className="mr-2" />
               )}
-              
+
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
