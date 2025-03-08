@@ -194,7 +194,7 @@ const CoursePage = () => {
       <Navbar />
       <Toaster position="top-right" reverseOrder={false} />
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
-        <h1 className="text-3xl sm:text-4xl font-bold text-center my-25 sm:my-20">Explore Courses</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-center my-25 sm:my-25">Explore Courses</h1>
         
         {/* Search Box */}
         <div className="relative mx-auto max-w-md mb-8 -my-20">
@@ -253,7 +253,7 @@ const CoursePage = () => {
                       'https://via.placeholder.com/300x200?text=No+Thumbnail'
                     }
                     alt={course.title}
-                    className="w-full h-32 object-cover"
+                    className="w-full h-32 object-cover border-3 border-orange-500 rounded-lg "
                   />
                   <div className="p-3 flex-1 flex flex-col">
                     <h3 className="text-base font-semibold line-clamp-1">{course.title}</h3>
@@ -276,11 +276,11 @@ const CoursePage = () => {
                         className={`text-white px-2 py-1 rounded transition text-xs text-center ${
                           !isEnrolled(course.id)
                             ? "bg-gray-500 cursor-not-allowed"
-                            : "bg-green-600 hover:bg-green-700"
+                            : "bg-blue-600 hover:bg-blue-700"
                         }`}
                         disabled={!isEnrolled(course.id) && (!user || user.email !== "pranabibaruah@gmail.com")}
                       >
-                        Access Course
+                        View Course
                       </button>
                     </div>
                   </div>
@@ -302,7 +302,7 @@ const CoursePage = () => {
                       'https://via.placeholder.com/300x200?text=No+Thumbnail'
                     }
                     alt={course.title}
-                    className="w-full md:w-48 h-32 md:h-40 object-cover rounded-lg"
+                    className="w-full md:w-48 h-32 md:h-40 object-cover border-3 border-orange-500 rounded-lg  "
                   />
                   <div className="flex-1">
                     <h3 className="text-2xl font-semibold">{course.title}</h3>
@@ -323,11 +323,11 @@ const CoursePage = () => {
                         onClick={() => navigate(`/coursedetails/${course.id}`)}
                         className={`inline-block text-white px-4 py-2 rounded transition ${!isEnrolled(course.id)
                             ? "bg-gray-500 cursor-not-allowed"
-                            : "bg-green-600 hover:bg-green-700"
+                            : "bg-blue-600 hover:bg-blue-700"
                           }`}
                         disabled={!isEnrolled(course.id) && (!user || user.email !== "pranabibaruah@gmail.com")}
                       >
-                        Access Course
+                        View Course
                       </button>
                     </div>
                   </div>
