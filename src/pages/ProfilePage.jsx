@@ -201,90 +201,81 @@ const ProfilePage = () => {
   return (
     <>
       <Navbar />
-      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-8">
-  <div className="mb-6 text-center">
-    <h1 className="text-3xl font-bold text-gray-900 my-22 md:my-20 ">
-      My Enrolled Courses
-    </h1>
-  </div>
-  {loadingEnrollments ? (
-    <div className="flex justify-center items-center py-16">
-      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+      <div className="max-w-screen-md mx-auto">
+  <div className="bg-white rounded-xl shadow-sm p-4 mb-8">
+    <div className="mb-6 text-center">
+      <h1 className="text-3xl font-bold text-gray-900 ">
+        My Enrolled Courses
+      </h1>
     </div>
-  ) : enrolledCourses.length === 0 ? (
-    <div className="text-center py-16">
-      <p className="mt-4 text-xl font-semibold text-gray-900">
-        You haven't enrolled in any courses yet.
-      </p>
-      <button
-        onClick={() => navigate('/courses')}
-        className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      >
-        Browse Courses
-      </button>
-    </div>
-  ) : (
-    // Using grid layout to show two courses side by side on small screens.
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 -my-15">
-      {enrolledCourses.map((course) => (
-        <div
-          key={course.id}
-          className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300"
+    {loadingEnrollments ? (
+      <div className="flex justify-center items-center py-16">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+      </div>
+    ) : enrolledCourses.length === 0 ? (
+      <div className="text-center py-16">
+        <p className="mt-4 text-xl font-semibold text-gray-900">
+          You haven't enrolled in any courses yet.
+        </p>
+        <button
+          onClick={() => navigate('/courses')}
+          className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          <div className="flex flex-col sm:flex-row items-center p-4">
-            <img
-              src={
-                course.thumbnailUrl ||
-                (course.videos && course.videos[0]?.thumbnailUrl) ||
-                'https://via.placeholder.com/300x200?text=No+Thumbnail'
-              }
-              alt={course.title}
-              className="w-full h-40 object-cover sm:mx-0"
-            />
-            <div className="flex-1 mt-4 sm:mt-0 sm:ml-4 text-center sm:text-left">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {course.title}
-              </h2>
-              <p className="text-gray-600 mt-1">{course.description}</p>
-              {/* {course.enrollmentStatus && (
-                course.enrollmentStatus === 'paid' ? (
-                  <p className="mt-1 text-sm text-green-600 font-semibold">
-                    Enrolled
-                  </p>
-                ) : (
-                  <p className="mt-1 text-sm text-yellow-600 font-semibold">
-                    {course.enrollmentStatus}
-                  </p>
-                )
-              )} */}
-            </div>
-            <div className="mt-4 sm:mt-0 flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto justify-center">
-              {course.enrollmentStatus !== 'paid' && (
+          Browse Courses
+        </button>
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 gap-6">
+        {enrolledCourses.map((course) => (
+          <div
+            key={course.id}
+            className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300"
+          >
+            <div className="flex flex-col items-center p-4">
+              <img
+                src={
+                  course.thumbnailUrl ||
+                  (course.videos && course.videos[0]?.thumbnailUrl) ||
+                  'https://via.placeholder.com/300x200?text=No+Thumbnail'
+                }
+                alt={course.title}
+                className="w-full h-40 object-cover border-5 border-orange-500 rounded-lg"
+              />
+              <div className="flex-1 mt-4 text-center">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {course.title}
+                </h2>
+                <p className="text-gray-600 mt-1">{course.description}</p>
+              </div>
+              <div className="mt-4 flex flex-col gap-2 w-full justify-center">
+                {course.enrollmentStatus !== 'paid' && (
+                  <button
+                    onClick={() => handleEnrollmentPayment(course)}
+                    className="inline-block text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition w-full"
+                  >
+                    Enroll
+                  </button>
+                )}
                 <button
-                  onClick={() => handleEnrollmentPayment(course)}
-                  className="inline-block text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition w-full sm:w-auto"
+                  onClick={() => navigate(`/coursedetails/${course.id}`)}
+                  className={`inline-block text-white px-4 py-2 rounded-sm transition w-full text-xl ${
+                    course.enrollmentStatus !== 'paid'
+                      ? 'bg-gray-500 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                  disabled={course.enrollmentStatus !== 'paid'}
                 >
-                  Enroll
+                  View Enrolled Course
                 </button>
-              )}
-              <button
-                onClick={() => navigate(`/coursedetails/${course.id}`)}
-                className={`inline-block text-white px-4 py-2 rounded-sm transition w-full sm:w-auto text-xl  ${
-                  course.enrollmentStatus !== 'paid'
-                    ? 'bg-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
-                disabled={course.enrollmentStatus !== 'paid'}
-              >
-                View Enrolled Course
-              </button>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
-    </div>
-  )}
+        ))}
+      </div>
+    )}
+  </div>
 </div>
+
 
       <div className="min-h-screen bg-gray-50 pt-8 pb-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

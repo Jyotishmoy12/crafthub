@@ -197,7 +197,7 @@ const HeroSection = () => {
               1) Use text-3xl on small, text-5xl on md+ 
               2) Flex for side-by-side on md, stacked/centered on small
             */}
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800  flex-col md:flex-row items-center md:items-start justify-center md:justify-start space-x-0 md:space-x-3">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800  flex-col md:flex-row items-center md:items-start justify-center md:justify-start space-x-3">
               <span className="relative inline-block">
                 <AnimatePresence mode="wait">
                   {isEnglish ? (
