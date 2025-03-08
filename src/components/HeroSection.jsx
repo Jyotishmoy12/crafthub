@@ -174,7 +174,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden my-20">
+    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden my-25">
       {/* Canvas background for animated craft elements */}
       <canvas
         ref={canvasRef}
@@ -184,83 +184,89 @@ const HeroSection = () => {
 
       {/* Content */}
       <div className="container relative z-10 px-6 py-12 mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           {/* Text Content */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
+            // Center text on small screens, left on md+ screens
             className="text-center md:text-left"
           >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gray-800 flex space-x-3">
-         <span className="relative inline-block">
-        <AnimatePresence mode="wait">
-          {isEnglish ? (
-            <motion.span
-              key="hello"
-              className="relative z-10 font-serif italic text-blue-700"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.2 }}
-              transition={{ duration: 0.8 }}
-            >
-              Hello
-            </motion.span>
-          ) : (
-            <motion.span
-              key="namaskar"
-              className="relative z-10 font-semibold  text-blue-700"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.2 }}
-              transition={{ duration: 0.8 }}
-            >
-              নমস্কাৰ
-            </motion.span>
-          )}
-        </AnimatePresence>
-        <motion.span
-          className="absolute -bottom-2 left-0 w-full h-3 bg-yellow-200 -z-10"
-          initial={{ width: 0 }}
-          animate={{ width: "100%" }}
-          transition={{ delay: 0.3, duration: 0.4 }}
-        />
-      </span>
+            {/* 
+              1) Use text-3xl on small, text-5xl on md+ 
+              2) Flex for side-by-side on md, stacked/centered on small
+            */}
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800  flex-col md:flex-row items-center md:items-start justify-center md:justify-start space-x-0 md:space-x-3">
+              <span className="relative inline-block">
+                <AnimatePresence mode="wait">
+                  {isEnglish ? (
+                    <motion.span
+                      key="hello"
+                      className="relative z-10 font-serif italic text-blue-700"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.2 }}
+                      transition={{ duration: 0.8 }}
+                    >
+                      Hello
+                    </motion.span>
+                    
+                  ) : (
+                    <motion.span
+                      key="namaskar"
+                      className="relative z-10 text-blue-700"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.2 }}
+                      transition={{ duration: 0.8 }}
+                    >
+                      নমস্কাৰ
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+                <motion.span
+                  className="absolute -bottom-2 left-0 w-full h-3 bg-yellow-200 -z-10"
+                  initial={{ width: 0 }}
+                  animate={{ width: '100%' }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                />
+              </span>
 
-      <span className="relative inline-block">
-        <AnimatePresence mode="wait">
-          {isEnglish ? (
-            <motion.span
-              key="welcome"
-              className="relative z-10 font-serif italic text-orange-600"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.2 }}
-              transition={{ duration: 0.8 }}
-            >
-              Welcome
-            </motion.span>
-          ) : (
-            <motion.span
-              key="swagatom"
-              className="relative z-10 text-orange-600 font-semibold"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.2 }}
-              transition={{ duration: 0.8 }}
-            >
-              স্বাগতম
-            </motion.span>
-          )}
-        </AnimatePresence>
-        <motion.span
-          className="absolute -bottom-2 left-0 w-full h-3 bg-pink-200 -z-10"
-          initial={{ width: 0 }}
-          animate={{ width: "100%" }}
-          transition={{ delay: 0.5, duration: 0.4 }}
-        />
-      </span>
-    </h1>
+              <span className="relative inline-block">
+                <AnimatePresence mode="wait">
+                  {isEnglish ? (
+                    <motion.span
+                      key="welcome"
+                      className="relative z-10 font-serif italic text-orange-600"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.2 }}
+                      transition={{ duration: 0.8 }}
+                    >
+                      Welcome
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="swagatom"
+                      className="relative z-10 text-orange-600 font-semibold"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.2 }}
+                      transition={{ duration: 0.8 }}
+                    >
+                      স্বাগতম
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+                <motion.span
+                  className="absolute -bottom-2 left-0 w-full h-3 bg-pink-200 -z-10"
+                  initial={{ width: 0 }}
+                  animate={{ width: '100%' }}
+                  transition={{ delay: 0.5, duration: 0.4 }}
+                />
+              </span>
+            </h1>
 
             <motion.p
               className="text-lg text-gray-600 mb-8 max-w-lg mx-auto md:mx-0"
