@@ -14,6 +14,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Check if current location is home page
+  const isHomePage = location.pathname === '/';
+
   // Determine if we are on pages where Profile link should be shown
   const showProfileLink = location.pathname === '/products' || location.pathname === '/courses' || location.pathname === '/';
 
@@ -153,6 +156,18 @@ const Navbar = () => {
             <div className="hidden md:block flex-grow">
               <div className="flex justify-center">
                 <div className="ml-10 flex items-center space-x-8">
+                  {/* Home link - only show if we're not on the home page */}
+                  {!isHomePage && (
+                    <motion.a
+                      href="/"
+                      className="text-neutral hover:text-blue-700 font-medium text-xl"
+                      whileHover={{ scale: 1.1, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Home
+                    </motion.a>
+                  )}
+                  
                   {['Courses', 'Products'].map((item) => (
                     <motion.a
                       key={item}
@@ -260,6 +275,16 @@ const Navbar = () => {
           style={{ overflow: 'hidden' }}
         >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white">
+            {/* Home link in mobile menu - only show if not on home page */}
+            {!isHomePage && (
+              <a
+                href="/"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              >
+                Home
+              </a>
+            )}
+            
             {['Courses', 'Products'].map((item) => (
               <a
                 key={item}
