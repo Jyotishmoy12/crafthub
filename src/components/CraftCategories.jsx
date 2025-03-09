@@ -54,7 +54,7 @@ const CraftCategories = () => {
     },
     {
       id: 5,
-      name: "Jewelry Making",
+      name: "Jewellery Making",
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-8 h-8 md:w-10 md:h-10">
           <circle cx="12" cy="12" r="9" />
