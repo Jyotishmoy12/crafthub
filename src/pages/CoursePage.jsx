@@ -74,8 +74,8 @@ const CoursePage = () => {
     } else {
       const lowercasedSearch = searchTerm.toLowerCase();
       const filtered = courses.filter(
-        course => 
-          course.title.toLowerCase().includes(lowercasedSearch) || 
+        course =>
+          course.title.toLowerCase().includes(lowercasedSearch) ||
           (course.description && course.description.toLowerCase().includes(lowercasedSearch))
       );
       setFilteredCourses(filtered);
@@ -188,14 +188,14 @@ const CoursePage = () => {
       <p>Loading courses...</p>
     </div>
   </div>;
-  
+
   return (
     <>
       <Navbar />
       <Toaster position="top-right" reverseOrder={false} />
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
         <h1 className="text-3xl sm:text-4xl font-bold text-center my-25 sm:my-25">Explore Courses</h1>
-        
+
         {/* Search Box */}
         <div className="relative mx-auto max-w-md mb-8 -my-20">
           <div className="flex items-center border-2 rounded-lg overflow-hidden focus-within:border-blue-500 transition-colors">
@@ -207,7 +207,7 @@ const CoursePage = () => {
               onChange={handleSearchChange}
             />
             {searchTerm && (
-              <button 
+              <button
                 className="text-gray-500 hover:text-gray-700 px-2"
                 onClick={clearSearch}
               >
@@ -215,18 +215,18 @@ const CoursePage = () => {
               </button>
             )}
             <div className="bg-blue-600 text-white p-2">
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-5 w-5" 
-                fill="none" 
-                viewBox="0 0 24 24" 
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
             </div>
@@ -240,12 +240,18 @@ const CoursePage = () => {
         ) : (
           <>
             {/* Small screens: Grid layout (2 columns) */}
-            <div className="grid grid-cols-2 gap-4 sm:hidden">
+            {/* Mobile screens */}
+            <div className="grid grid-cols-1 gap-4 sm:hidden">
               {filteredCourses.map((course) => (
                 <div
                   key={course.id}
-                  className="flex flex-col border rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
+                  className="border rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
                 >
+                  {/* Course Name at the Top */}
+                  <div className="p-3 border-b">
+                    <h3 className="text-base font-semibold line-clamp-1">{course.title}</h3>
+                  </div>
+                  {/* Image in the Middle */}
                   <img
                     src={
                       course.thumbnailUrl ||
@@ -253,32 +259,33 @@ const CoursePage = () => {
                       'https://via.placeholder.com/300x200?text=No+Thumbnail'
                     }
                     alt={course.title}
-                    className="w-full h-32 object-cover border-3 border-orange-500 rounded-lg "
+                    className="w-full h-32 object-cover border-3 border-orange-500"
                   />
-                  <div className="p-3 flex-1 flex flex-col">
-                    <h3 className="text-base font-semibold line-clamp-1">{course.title}</h3>
+                  {/* Buttons (and optional description/price) at the Bottom */}
+                  <div className="p-3 flex flex-col">
                     <p className="mt-1 text-xs text-gray-600 line-clamp-2">{course.description}</p>
                     <p className="mt-2 font-bold text-sm">₹{course.price}</p>
                     <div className="mt-2 flex flex-col gap-1">
                       <button
                         onClick={() => handlePayment(course)}
-                        className={`text-white px-2 py-1 rounded transition text-xs text-center ${
-                          isEnrolled(course.id)
+                        className={`text-white px-2 py-1 rounded transition text-xs text-center ${isEnrolled(course.id)
                             ? "bg-gray-500 cursor-not-allowed"
                             : "bg-blue-600 hover:bg-blue-700"
-                        }`}
+                          }`}
                         disabled={isEnrolled(course.id)}
                       >
                         {isEnrolled(course.id) ? "Enrolled" : "Enroll"}
                       </button>
                       <button
                         onClick={() => navigate(`/coursedetails/${course.id}`)}
-                        className={`text-white px-2 py-1 rounded transition text-xs text-center ${
-                          !isEnrolled(course.id)
+                        className={`text-white px-2 py-1 rounded transition text-xs text-center ${!isEnrolled(course.id)
                             ? "bg-gray-500 cursor-not-allowed"
                             : "bg-blue-600 hover:bg-blue-700"
-                        }`}
-                        disabled={!isEnrolled(course.id) && (!user || user.email !== "pranabibaruah@gmail.com")}
+                          }`}
+                        disabled={
+                          !isEnrolled(course.id) &&
+                          (!user || user.email !== "pranabibaruah@gmail.com")
+                        }
                       >
                         View Course
                       </button>
@@ -287,7 +294,8 @@ const CoursePage = () => {
                 </div>
               ))}
             </div>
-            
+
+
             {/* Medium+ screens: Original list layout */}
             <ul className="hidden sm:block space-y-8">
               {filteredCourses.map((course) => (
@@ -312,8 +320,8 @@ const CoursePage = () => {
                       <button
                         onClick={() => handlePayment(course)}
                         className={`inline-block text-white px-4 py-2 rounded transition ${isEnrolled(course.id)
-                            ? "bg-gray-500 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-700"
+                          ? "bg-gray-500 cursor-not-allowed"
+                          : "bg-blue-600 hover:bg-blue-700"
                           }`}
                         disabled={isEnrolled(course.id)}
                       >
@@ -322,8 +330,8 @@ const CoursePage = () => {
                       <button
                         onClick={() => navigate(`/coursedetails/${course.id}`)}
                         className={`inline-block text-white px-4 py-2 rounded transition ${!isEnrolled(course.id)
-                            ? "bg-gray-500 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-700"
+                          ? "bg-gray-500 cursor-not-allowed"
+                          : "bg-blue-600 hover:bg-blue-700"
                           }`}
                         disabled={!isEnrolled(course.id) && (!user || user.email !== "pranabibaruah@gmail.com")}
                       >

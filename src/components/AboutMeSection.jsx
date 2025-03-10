@@ -259,8 +259,8 @@ const AboutMeSection = () => {
                       <ToyBrick className="text-white h-8 w-8" />
                     </div>
                   </div>
-                  <h4 className="font-bold text-xl text-center text-blue-800">Soft toys Making</h4>
-                  <p className="text-gray-600 text-center mt-2">Creating Soft Toy Magic</p>
+                  <h4 className="font-bold text-xl text-center text-blue-800">Stencil Work</h4>
+                  <p className="text-gray-600 text-center mt-2">Stencils That Inspire Creativity</p>
                 </div>
               </div>
             </div>
@@ -308,7 +308,7 @@ const AboutMeSection = () => {
         {/* Footer */}
         <div className={`py-8 px-6 bg-gradient-to-r from-blue-900 to-orange-600 text-center transition-all duration-700 delay-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
           <p className="text-white text-lg font-medium italic">
-            "Crafting isn't just what I do — it's who I am."
+            "Art and craft give hands a voice and imagination a form "
           </p>
           <div className="flex justify-center mt-3 space-x-2">
             {[...Array(5)].map((_, i) => (
