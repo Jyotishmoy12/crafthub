@@ -83,7 +83,7 @@ const CarouselGallery = () => {
 
   return (
     <div className="w-full flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-center text-slate-800">
+      <h1 className="text-3xl md:text-3xl lg:text-3xl font-bold mb-6 text-center text-slate-800">
         <span className="text-blue-700 underline">Contemporary</span>
         <span className="text-orange-600 underline"> Art Collection</span>
       </h1>
