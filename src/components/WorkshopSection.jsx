@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaRegSmile } from 'react-icons/fa'; // Change icon as needed
+
 
 const fadeVariant = {
   hidden: { opacity: 0, y: 20 },
@@ -23,7 +23,7 @@ const WorkshopSection = () => {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold"><span className='text-blue-700 '>Offline</span> <span className='text-orange-600'>Workshops</span></h2>
+          <h2 className="text-3xl font-bold"><span className='text-blue-700 underline'>Offline</span> <span className='text-orange-600 underline'>Workshops</span></h2>
           {/* <p className="mt-2 text-lg text-gray-600">
             Discover the hands-on experience of our offline workshops.
           </p> */}

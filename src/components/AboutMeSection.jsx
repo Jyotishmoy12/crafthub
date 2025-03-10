@@ -135,7 +135,7 @@ const AboutMeSection = () => {
               {/* Paper Crafting */}
               <div className="rounded-xl shadow-xl overflow-hidden group hover:scale-105 transition-all duration-300">
                 <div className="h-3 bg-gradient-to-r from-blue-600 to-orange-600"></div>
-                <div className="p-4 sm:p-6 bg-gradient-to-b from-white to-gray-100">
+                <div className="p-4 sm:p-6 ">
                   <div className="flex justify-center mb-4 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                     <div className="p-3 rounded-full bg-gradient-to-br from-blue-600 to-orange-600 shadow-lg">
                       <Scissors className="text-white h-8 w-8" />
@@ -149,7 +149,7 @@ const AboutMeSection = () => {
               {/* Resin Art */}
               <div className="rounded-xl shadow-xl overflow-hidden group hover:scale-105 transition-all duration-300">
                 <div className="h-3 bg-gradient-to-r from-blue-600 to-orange-600"></div>
-                <div className="p-4 sm:p-6 bg-gradient-to-b from-white to-gray-100">
+                <div className="p-4 sm:p-6">
                   <div className="flex justify-center mb-4 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                     <div className="p-3 rounded-full bg-gradient-to-br from-blue-600 to-orange-600 shadow-lg">
                       <Palette className="text-white h-8 w-8" />
@@ -163,7 +163,7 @@ const AboutMeSection = () => {
               {/* Custom Gifts */}
               <div className="rounded-xl shadow-xl overflow-hidden group hover:scale-105 transition-all duration-300">
                 <div className="h-3 bg-gradient-to-r from-blue-600 to-orange-600"></div>
-                <div className="p-4 sm:p-6 bg-gradient-to-b from-white to-gray-100">
+                <div className="p-4 sm:p-6 ">
                   <div className="flex justify-center mb-4 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                     <div className="p-3 rounded-full bg-gradient-to-br from-blue-600 to-orange-600 shadow-lg">
                       <Package className="text-white h-8 w-8" />
@@ -177,7 +177,7 @@ const AboutMeSection = () => {
               {/* Digital Design */}
               <div className="rounded-xl shadow-xl overflow-hidden group hover:scale-105 transition-all duration-300">
                 <div className="h-3 bg-gradient-to-r from-blue-600 to-orange-600"></div>
-                <div className="p-4 sm:p-6 bg-gradient-to-b from-white to-gray-100">
+                <div className="p-4 sm:p-6 ">
                   <div className="flex justify-center mb-4 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                     <div className="p-3 rounded-full bg-gradient-to-br from-blue-600 to-orange-600 shadow-lg">
                       <Star className="text-white h-8 w-8" />
@@ -191,7 +191,7 @@ const AboutMeSection = () => {
               {/* Creative Illustration */}
               <div className="rounded-xl shadow-xl overflow-hidden group hover:scale-105 transition-all duration-300">
                 <div className="h-3 bg-gradient-to-r from-blue-600 to-orange-600"></div>
-                <div className="p-4 sm:p-6 bg-gradient-to-b from-white to-gray-100">
+                <div className="p-4 sm:p-6">
                   <div className="flex justify-center mb-4 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                     <div className="p-3 rounded-full bg-gradient-to-br from-blue-600 to-orange-600 shadow-lg">
                       <Sparkles className="text-white h-8 w-8" />
@@ -205,7 +205,7 @@ const AboutMeSection = () => {
               {/* Artisan Workshops */}
               <div className="rounded-xl shadow-xl overflow-hidden group hover:scale-105 transition-all duration-300">
                 <div className="h-3 bg-gradient-to-r from-blue-600 to-orange-600"></div>
-                <div className="p-4 sm:p-6 bg-gradient-to-b from-white to-gray-100">
+                <div className="p-4 sm:p-6 ">
                   <div className="flex justify-center mb-4 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                     <div className="p-3 rounded-full bg-gradient-to-br from-blue-600 to-orange-600 shadow-lg">
                       <Heart className="text-white h-8 w-8" />
@@ -218,65 +218,43 @@ const AboutMeSection = () => {
             </div>
           </div>
           
-          {/* Philosophy Section */}
-          <div className={`mt-16 rounded-xl overflow-hidden shadow-xl transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
-            <div className="h-3 bg-gradient-to-r from-blue-600 to-orange-600"></div>
-            <div className="p-6 bg-gradient-to-br from-white to-gray-100">
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="flex-shrink-0">
-                  <div className="relative h-20 w-20">
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 to-orange-600 animate-pulse"></div>
-                    <div className="absolute inset-1 rounded-full bg-white flex items-center justify-center">
-                      <Heart className="text-orange-600 h-10 w-10" fill="rgba(255,165,0,0.2)" />
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-blue-600 mb-3 text-center md:text-left">My Creative Philosophy</h3>
-                  <p className="text-gray-700">
-                    I believe that art should evoke emotion, connect people, and bring warmth to spaces. Every piece I create is made with intention and love, designed to be both beautiful and meaningful to its owner.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Connect Section */}
-          <div className={`mt-16 text-center transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
-            <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-orange-600 mb-8">Let's Connect</h3>
+        
+          {/* Connect Section
+          // <div className={`mt-16 text-center transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
+          //   <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-orange-600 mb-8">Let's Connect</h3>
             
-            <div className="flex justify-center space-x-8">
-              <a href="#" className="flex flex-col items-center group">
-                <div className="relative h-16 w-16 transform group-hover:scale-110 transition-all duration-300">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-105"></div>
-                  <div className="absolute inset-0 rounded-full bg-gray-100 group-hover:bg-white transition-all duration-300 flex items-center justify-center">
-                    <Mail className="text-blue-600 h-8 w-8 group-hover:text-blue-500 transition-colors" />
-                  </div>
-                </div>
-                <span className="mt-2 text-sm font-medium text-blue-600 group-hover:text-blue-700 transition-colors">Email</span>
-              </a>
+          //   <div className="flex justify-center space-x-8">
+          //     <a href="#" className="flex flex-col items-center group">
+          //       <div className="relative h-16 w-16 transform group-hover:scale-110 transition-all duration-300">
+          //         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-105"></div>
+          //         <div className="absolute inset-0 rounded-full bg-gray-100 group-hover:bg-white transition-all duration-300 flex items-center justify-center">
+          //           <Mail className="text-blue-600 h-8 w-8 group-hover:text-blue-500 transition-colors" />
+          //         </div>
+          //       </div>
+          //       <span className="mt-2 text-sm font-medium text-blue-600 group-hover:text-blue-700 transition-colors">Email</span>
+          //     </a>
               
-              <a href="#" className="flex flex-col items-center group">
-                <div className="relative h-16 w-16 transform group-hover:scale-110 transition-all duration-300">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-105"></div>
-                  <div className="absolute inset-0 rounded-full bg-gray-100 group-hover:bg-white transition-all duration-300 flex items-center justify-center">
-                    <Instagram className="text-orange-600 h-8 w-8 group-hover:text-orange-500 transition-colors" />
-                  </div>
-                </div>
-                <span className="mt-2 text-sm font-medium text-orange-600 group-hover:text-orange-700 transition-colors">Instagram</span>
-              </a>
+          //     <a href="#" className="flex flex-col items-center group">
+          //       <div className="relative h-16 w-16 transform group-hover:scale-110 transition-all duration-300">
+          //         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-105"></div>
+          //         <div className="absolute inset-0 rounded-full bg-gray-100 group-hover:bg-white transition-all duration-300 flex items-center justify-center">
+          //           <Instagram className="text-orange-600 h-8 w-8 group-hover:text-orange-500 transition-colors" />
+          //         </div>
+          //       </div>
+          //       <span className="mt-2 text-sm font-medium text-orange-600 group-hover:text-orange-700 transition-colors">Instagram</span>
+          //     </a>
               
-              <a href="#" className="flex flex-col items-center group">
-                <div className="relative h-16 w-16 transform group-hover:scale-110 transition-all duration-300">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-black to-gray-800 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-105"></div>
-                  <div className="absolute inset-0 rounded-full bg-gray-100 group-hover:bg-white transition-all duration-300 flex items-center justify-center">
-                    <Facebook className="text-white h-8 w-8 group-hover:text-white transition-colors" />
-                  </div>
-                </div>
-                <span className="mt-2 text-sm font-medium text-white group-hover:text-white transition-colors">Facebook</span>
-              </a>
-            </div>
-          </div>
+          //     <a href="#" className="flex flex-col items-center group">
+          //       <div className="relative h-16 w-16 transform group-hover:scale-110 transition-all duration-300">
+          //         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-black to-gray-800 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-105"></div>
+          //         <div className="absolute inset-0 rounded-full bg-gray-100 group-hover:bg-white transition-all duration-300 flex items-center justify-center">
+          //           <Facebook className="text-white h-8 w-8 group-hover:text-white transition-colors" />
+          //         </div>
+          //       </div>
+          //       <span className="mt-2 text-sm font-medium text-white group-hover:text-white transition-colors">Facebook</span>
+          //     </a>
+          //   </div>
+          // </div> */}
         </div>
         
         {/* Footer */}

@@ -28,7 +28,7 @@ const CertificateSlider = () => {
   return (
     <>
       <h1 className="text-center font-bold text-3xl mb-4 my-30">
-        <span className='text-blue-700 '>My</span> <span className='text-orange-600'>Certificates</span>
+        <span className='text-blue-700 underline'>My</span> <span className='text-orange-600 underline'>Certificates</span>
       </h1>
       <div className="relative w-full overflow-hidden py-8">
         <div className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none">

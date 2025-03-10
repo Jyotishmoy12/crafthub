@@ -84,8 +84,8 @@ const CarouselGallery = () => {
   return (
     <div className="w-full flex flex-col items-center justify-center p-4">
       <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-center text-slate-800">
-        <span className="text-blue-700">Contemporary</span>
-        <span className="text-orange-600"> Art Collection</span>
+        <span className="text-blue-700 underline">Contemporary</span>
+        <span className="text-orange-600 underline"> Art Collection</span>
       </h1>
       <div className="overflow-hidden w-full max-w-4xl" ref={carouselRef}>
         <motion.div 
