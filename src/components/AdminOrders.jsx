@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   collection,
+  query,
+  orderBy,
   onSnapshot,
   doc,
   updateDoc,
-  query,
-  orderBy,
   deleteDoc
 } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
@@ -165,6 +165,8 @@ const AdminOrders = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              {/* New column for serial number */}
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S.No</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('createdAt')}>
                 Date
@@ -182,23 +184,25 @@ const AdminOrders = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {isLoading ? (
               <tr>
-                <td colSpan="8" className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan="9" className="px-6 py-4 text-center text-sm text-gray-500">
                   Loading orders...
                 </td>
               </tr>
             ) : sortedOrders.length === 0 ? (
               <tr>
-                <td colSpan="8" className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan="9" className="px-6 py-4 text-center text-sm text-gray-500">
                   No orders found
                 </td>
               </tr>
             ) : (
-              sortedOrders.map((order) => (
+              sortedOrders.map((order, index) => (
                 <React.Fragment key={order.id}>
                   <tr
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
                   >
+                    {/* Serial number column */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {order.orderId || order.id}
                     </td>
@@ -238,7 +242,7 @@ const AdminOrders = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full text-white ${order.status && order.status.toLowerCase() === 'shipped' ? 'bg-blue-500' : 'bg-yellow-500'}`}>
-                        {order.status ? order.status.toLowerCase() : 'pending'}
+                        {order.status ? order.status.toLowerCase() : 'processed'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -247,16 +251,16 @@ const AdminOrders = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleSetStatus(order.id, 'pending');
+                            handleSetStatus(order.id, 'processed');
                           }}
-                          disabled={!order.status || order.status.toLowerCase() === 'pending'}
+                          disabled={!order.status || order.status.toLowerCase() === 'processed'}
                           className={`px-3 py-1 rounded ${
-                            (!order.status || order.status.toLowerCase() === 'pending')
+                            (!order.status || order.status.toLowerCase() === 'processed')
                               ? 'bg-yellow-500 text-white'
                               : 'bg-white border border-yellow-500 text-yellow-500 hover:bg-yellow-100'
                           }`}
                         >
-                          Pending
+                          processed
                         </button>
                         <button
                           onClick={(e) => {
@@ -287,7 +291,7 @@ const AdminOrders = () => {
                   </tr>
                   {expandedOrderId === order.id && (
                     <tr>
-                      <td colSpan="8" className="px-6 py-4 bg-gray-50">
+                      <td colSpan="9" className="px-6 py-4 bg-gray-50">
                         <div className="text-sm text-gray-900">
                           <div className="mb-2 font-semibold flex items-center">
                             <FileText className="w-4 h-4 mr-2" />

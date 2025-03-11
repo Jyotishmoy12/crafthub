@@ -315,7 +315,7 @@ const ProfilePage = () => {
                           <h2 className="text-lg font-semibold text-white">Order #{order.id.slice(-8)}</h2>
                           {/* Shipping Status Badge */}
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getShippingStatusColor(order.status ? order.status : 'pending')}`}>
-                            {order.status ? order.status.toLowerCase() : 'pending'}
+                            {order.status ? order.status.toLowerCase() : 'processed'}
                           </span>
                           {/* Payment Status Badge */}
                           {order.paymentInfo && (
