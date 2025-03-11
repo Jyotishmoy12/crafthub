@@ -15,6 +15,43 @@ const ProfilePage = () => {
   const [loadingEnrollments, setLoadingEnrollments] = useState(true);
   const navigate = useNavigate();
 
+  // Helper functions for status badges
+  const statusColors = {
+    completed: 'bg-green-100 text-green-800',
+    pending: 'bg-yellow-100 text-yellow-800',
+    failed: 'bg-red-100 text-red-800'
+  };
+  const getStatusColor = (status) => {
+    return statusColors[status.toLowerCase()] || 'bg-gray-100 text-gray-800';
+  };
+
+  const shippingStatusColors = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    shipped: 'bg-blue-100 text-blue-800'
+  };
+  const getShippingStatusColor = (status) => {
+    return shippingStatusColors[status.toLowerCase()] || 'bg-gray-100 text-gray-800';
+  };
+
+  const formatDate = (timestamp) => {
+    try {
+      const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      return new Intl.DateTimeFormat('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(date);
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return 'Invalid date';
+    }
+  };
+
   // Fetch orders for the logged-in user
   useEffect(() => {
     if (!loadingUser && !user) {
@@ -159,36 +196,6 @@ const ProfilePage = () => {
     rzp.open();
   };
 
-  // Utility functions for orders section
-  const statusColors = {
-    completed: 'bg-green-100 text-green-800',
-    pending: 'bg-yellow-100 text-yellow-800',
-    failed: 'bg-red-100 text-red-800'
-  };
-
-  const getStatusColor = (status) => {
-    return statusColors[status.toLowerCase()] || 'bg-gray-100 text-gray-800';
-  };
-
-  const formatDate = (timestamp) => {
-    try {
-      const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
-      if (isNaN(date.getTime())) {
-        return 'Invalid date';
-      }
-      return new Intl.DateTimeFormat('en-IN', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      }).format(date);
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return 'Invalid date';
-    }
-  };
-
   if (loading || loadingUser) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50">
@@ -202,84 +209,83 @@ const ProfilePage = () => {
     <>
       <Navbar />
       <div className="max-w-screen-md mx-auto">
-  <div className="bg-white rounded-xl shadow-sm p-4 mb-8">
-    <div className="mb-6 text-center">
-      <h1 className="text-3xl font-bold text-gray-900 ">
-        My Enrolled Courses
-      </h1>
-    </div>
-    {loadingEnrollments ? (
-      <div className="flex justify-center items-center py-16">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
-      </div>
-    ) : enrolledCourses.length === 0 ? (
-      <div className="text-center py-16">
-        <p className="mt-4 text-xl font-semibold text-gray-900">
-          You haven't enrolled in any courses yet.
-        </p>
-        <button
-          onClick={() => navigate('/courses')}
-          className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Browse Courses
-        </button>
-      </div>
-    ) : (
-      <div className="grid grid-cols-1 gap-6">
-        {enrolledCourses.map((course) => (
-          <div
-            key={course.id}
-            className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300"
-          >
-            <div className="flex flex-col items-center p-4">
-              <img
-                src={
-                  course.thumbnailUrl ||
-                  (course.videos && course.videos[0]?.thumbnailUrl) ||
-                  'https://via.placeholder.com/300x200?text=No+Thumbnail'
-                }
-                alt={course.title}
-                className="w-full h-40 object-cover border-5 border-orange-500 rounded-lg"
-              />
-              <div className="flex-1 mt-4 text-center">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {course.title}
-                </h2>
-                <p className="text-gray-600 mt-1">{course.description}</p>
-              </div>
-              <div className="mt-4 flex flex-col gap-2 w-full justify-center">
-                {course.enrollmentStatus !== 'paid' && (
-                  <button
-                    onClick={() => handleEnrollmentPayment(course)}
-                    className="inline-block text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition w-full"
-                  >
-                    Enroll
-                  </button>
-                )}
-                <button
-                  onClick={() => navigate(`/coursedetails/${course.id}`)}
-                  className={`inline-block text-white px-4 py-2 rounded-sm transition w-full text-xl ${
-                    course.enrollmentStatus !== 'paid'
-                      ? 'bg-gray-500 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
-                  disabled={course.enrollmentStatus !== 'paid'}
-                >
-                  View Enrolled Course
-                </button>
-              </div>
-            </div>
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-8">
+          <div className="mb-6 text-center">
+            <h1 className="text-3xl font-bold text-gray-900 ">
+              My Enrolled Courses
+            </h1>
           </div>
-        ))}
+          {loadingEnrollments ? (
+            <div className="flex justify-center items-center py-16">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+            </div>
+          ) : enrolledCourses.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="mt-4 text-xl font-semibold text-gray-900">
+                You haven't enrolled in any courses yet.
+              </p>
+              <button
+                onClick={() => navigate('/courses')}
+                className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Browse Courses
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6">
+              {enrolledCourses.map((course) => (
+                <div
+                  key={course.id}
+                  className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300"
+                >
+                  <div className="flex flex-col items-center p-4">
+                    <img
+                      src={
+                        course.thumbnailUrl ||
+                        (course.videos && course.videos[0]?.thumbnailUrl) ||
+                        'https://via.placeholder.com/300x200?text=No+Thumbnail'
+                      }
+                      alt={course.title}
+                      className="w-full h-40 object-cover border-5 border-orange-500 rounded-lg"
+                    />
+                    <div className="flex-1 mt-4 text-center">
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        {course.title}
+                      </h2>
+                      <p className="text-gray-600 mt-1">{course.description}</p>
+                    </div>
+                    <div className="mt-4 flex flex-col gap-2 w-full justify-center">
+                      {course.enrollmentStatus !== 'paid' && (
+                        <button
+                          onClick={() => handleEnrollmentPayment(course)}
+                          className="inline-block text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition w-full"
+                        >
+                          Enroll
+                        </button>
+                      )}
+                      <button
+                        onClick={() => navigate(`/coursedetails/${course.id}`)}
+                        className={`inline-block text-white px-4 py-2 rounded-sm transition w-full text-xl ${
+                          course.enrollmentStatus !== 'paid'
+                            ? 'bg-gray-500 cursor-not-allowed'
+                            : 'bg-blue-600 hover:bg-blue-700'
+                        }`}
+                        disabled={course.enrollmentStatus !== 'paid'}
+                      >
+                        View Enrolled Course
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    )}
-  </div>
-</div>
-
 
       <div className="min-h-screen bg-gray-50 pt-8 pb-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Orders Section (Existing Functionality) */}
+          {/* Orders Section (Existing Functionality with Added Shipping Status) */}
           <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
             <div className="mb-6">
               <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
@@ -307,6 +313,11 @@ const ProfilePage = () => {
                       <div>
                         <div className="flex items-center gap-2">
                           <h2 className="text-lg font-semibold text-white">Order #{order.id.slice(-8)}</h2>
+                          {/* Shipping Status Badge */}
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getShippingStatusColor(order.status ? order.status : 'pending')}`}>
+                            {order.status ? order.status.toLowerCase() : 'pending'}
+                          </span>
+                          {/* Payment Status Badge */}
                           {order.paymentInfo && (
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.paymentInfo.status)}`}>
                               {order.paymentInfo.status}
@@ -376,7 +387,10 @@ const ProfilePage = () => {
                             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Payment Information</h3>
                             {order.paymentInfo ? (
                               <div className="text-sm text-gray-600 space-y-1 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <p><span className="text-gray-500">Payment ID:</span> <span className="font-mono">{order.paymentInfo.razorpayPaymentId}</span></p>
+                                <p>
+                                  <span className="text-gray-500">Payment ID:</span> 
+                                  <span className="font-mono"> {order.paymentInfo.razorpayPaymentId}</span>
+                                </p>
                                 <p className="flex justify-between">
                                   <span className="text-gray-500">Status:</span>
                                   <span className={`font-medium ${order.paymentInfo.status.toLowerCase() === 'completed' ? 'text-green-600' :
@@ -407,9 +421,6 @@ const ProfilePage = () => {
               </div>
             )}
           </div>
-
-
-
         </div>
       </div>
       <Footer />
