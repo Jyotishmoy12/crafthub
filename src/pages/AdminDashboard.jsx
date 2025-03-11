@@ -248,7 +248,7 @@ const AdminDashboard = () => {
           >
             Order Management
           </button>
-          <button 
+          {/* <button 
             onClick={() => {
               auth.signOut();
               navigate('/');
@@ -256,7 +256,7 @@ const AdminDashboard = () => {
             className="ml-auto bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
           >
             Logout
-          </button>
+          </button> */}
         </div>
 
         {/* Tab Content */}
